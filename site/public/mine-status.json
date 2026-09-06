@@ -1,14 +1,1 @@
-{
-  "network": "mainnet",
-  "packageId": "0x06fe3c16c81994fc0c555f9288b2a9bc2265be45cc5a9a1107bdbc7f405b0f8a",
-  "block_height": 5,
-  "total_minted": "30000000000",
-  "total_minted_10mm": 300.0,
-  "last_block_ts": 1788712035,
-  "updated_at": "2026-09-06T17:28:42.499562+01:00",
-  "last_digest": "CDfAPYk1AUmjyfQqDbXvPzH6MC44baGc78PLFK2E7brw",
-  "iconUrl": "https://raw.githubusercontent.com/2SECSUI/10MinMine/main/site/public/10mmLogo.png",
-  "market_sui": "270000000",
-  "market_tenmm": "2500000000",
-  "market_seed_digest": "G912V4DAXz3pimwxfZHjJmJNLjVQB3n9v4Vx1h4JgX1d"
-}
+{"network":"mainnet","packageId":"0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98","rewardPoolId":"0x32423737a8e607111bc5ecb2ac49d226cc948abe4d690b55c20d63b09ee6e619","height":1,"lastMineDigest":"E9tjqRESZbMddEDAoPYBAUg1iYyqoigQcK8J1ybieKG5","updatedAt":"2026-09-06T16:45:39Z"}
