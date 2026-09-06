@@ -278,25 +278,20 @@ function renderMintLog(entries) {
   if (!body || !status) return;
   body.replaceChildren();
   const rows = Array.isArray(entries) ? entries.filter((entry) => entry && typeof entry === "object").slice().sort((a, b) => Number(b.height ?? b.block_height ?? 0) - Number(a.height ?? a.block_height ?? 0)) : [];
-  if (!rows.length) { body.innerHTML = `<tr><td colspan="5">No mint events published yet.</td></tr>`; status.textContent = "No recent blocks"; return; }
+  if (!rows.length) { body.innerHTML = `<tr><td colspan="2">No mint events published yet.</td></tr>`; status.textContent = "No recent blocks"; return; }
   rows.forEach((entry) => {
     const row = document.createElement("tr");
-    const rewarded = entry.rewarded || entry.rewards || entry.recipients;
-    let rewardedText = "—";
-    if (Array.isArray(rewarded) && rewarded.length) {
-      rewardedText = rewarded.map((r) => {
-        if (typeof r === "string") return `${r.slice(0, 6)}…${r.slice(-4)}`;
-        const addr = r.address || r.recipient || "";
-        const amt = r.amount_10mm ?? r.amount ?? r.raw;
-        const short = addr ? `${addr.slice(0, 8)}…${addr.slice(-4)}` : "—";
-        return amt != null ? `${short}: ${amt} 10MM` : short;
-      }).join(" · ");
-    } else if (typeof rewarded === "string") rewardedText = rewarded;
-    const values = [entry.height ?? entry.block_height ?? "—", displayTime(entry.ts ?? entry.timestamp ?? entry.time), shortDigest(entry.digest ?? entry.tx_digest), rewardedText, entry.event ?? entry.type ?? "mint"];
-    values.forEach((value, index) => { const cell = document.createElement("td"); if (index === 2) { const code = document.createElement("code"); code.textContent = String(value); cell.append(code); } else cell.textContent = String(value); row.append(cell); });
+    const amount = entry.amount_10mm ?? entry.minted_10mm ?? entry.amount ?? (entry.minted_raw != null ? Number(entry.minted_raw) / 1e8 : null);
+    const amountText = amount == null || amount === "" ? "—" : `${amount} 10MM`;
+    const timeText = displayTime(entry.ts ?? entry.timestamp ?? entry.time);
+    [amountText, timeText].forEach((value) => {
+      const cell = document.createElement("td");
+      cell.textContent = String(value);
+      row.append(cell);
+    });
     body.append(row);
   });
-  status.textContent = rows.length + " blocks · newest first · scroll for older";
+  status.textContent = rows.length + " blocks · newest 10 in view · scroll for older";
 }
 async function refreshMintData() {
   try { const log = await json("public/mine-log.json"); renderMintLog(log); } catch { renderMintLog([]); $("mint-log-status").textContent = "Mint log unavailable"; }

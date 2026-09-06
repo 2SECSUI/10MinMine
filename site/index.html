@@ -111,8 +111,8 @@
     .mint-log-heading { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap }
     .mint-log-heading h3 { margin: 0; font-size: 0.94rem; font-weight: 700 }
     .mint-log-status { color: var(--muted); font-size: 0.8rem; margin-top: 4px }
-    .mint-log-wrap { max-height: 25rem; overflow-y: auto; overflow-x: auto; margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; scrollbar-color: var(--muted) transparent }
-    .mint-log-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 560px }
+    .mint-log-wrap { max-height: calc(2.35rem * 10 + 2.2rem); overflow-y: auto; overflow-x: hidden; margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; scrollbar-color: var(--muted) transparent }
+    .mint-log-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 0 }
     .mint-log-table th { position: sticky; top: 0; z-index: 1; background: var(--panel); color: var(--muted); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-align: left; text-transform: uppercase; padding: 7px 9px; border-bottom: 1px solid var(--line) }
     .mint-log-table td { padding: 9px; border-bottom: 1px solid var(--line); vertical-align: top }
     .mint-log-table tbody tr:last-child td { border-bottom: 0 }
@@ -655,8 +655,8 @@
       <div class="mint-log-heading"><h3 id="mint-log-title">Mint log</h3><span id="mint-log-status">Loading recent blocks…</span></div>
       <div class="mint-log-wrap">
         <table class="mint-log-table">
-          <thead><tr><th scope="col">Height</th><th scope="col">Time</th><th scope="col">Digest</th><th scope="col">Rewarded</th><th scope="col">Event</th></tr></thead>
-          <tbody id="mint-log-body"><tr><td colspan="5">Loading recent blocks…</td></tr></tbody>
+          <thead><tr><th scope="col">Minted</th><th scope="col">Time</th></tr></thead>
+          <tbody id="mint-log-body"><tr><td colspan="2">Loading recent blocks…</td></tr></tbody>
         </table>
       </div>
     </div>
