@@ -5,7 +5,10 @@
   "total_minted": "10000000000",
   "total_minted_10mm": 100.0,
   "last_block_ts": 1788709635,
-  "updated_at": "2026-09-06T16:47:35.520044+01:00",
+  "updated_at": "2026-09-06T16:58:02.827874+01:00",
   "last_digest": "DuB2ESmcgPJyxdTQZvrWouB75V3w3rddGoG3qfbNw4N9",
-  "iconUrl": "https://raw.githubusercontent.com/2SECSUI/10MinMine/main/site/public/10mmLogo.png"
+  "iconUrl": "https://raw.githubusercontent.com/2SECSUI/10MinMine/main/site/public/10mmLogo.png",
+  "market_sui": "270000000",
+  "market_tenmm": "2500000000",
+  "market_seed_digest": "G912V4DAXz3pimwxfZHjJmJNLjVQB3n9v4Vx1h4JgX1d"
 }
