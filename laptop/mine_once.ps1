@@ -66,6 +66,40 @@ Add-Content -Path $TXT_LOG -Value $line -Encoding utf8
 Write-Host ("logged -> " + $TXT_LOG)
 Write-Host $line
 
+
+# Split ops mine share: 75% Aftermath / 20% Cetus / 5% Turbos (other wallets keep their registry payout as dev)
+$alloc = Join-Path $here "allocate_mine_rewards.ps1"
+if (Test-Path $alloc) {
+  try {
+    # Prefer parsing TENMM credit to ops from the mine digest when available; fallback = full block amount to ops if sole/majority
+    $opsAmt = [double]$amount
+    if ($digest) {
+      try {
+        $tmpTx = [System.IO.Path]::GetTempFileName()
+        sui client tx-block $digest --json 2>$null | Out-File -FilePath $tmpTx -Encoding utf8
+        $txRaw = Get-Content -Raw $tmpTx
+        Remove-Item -LiteralPath $tmpTx -ErrorAction SilentlyContinue
+        $coinType = "$PACKAGE_ID::tenmm::TENMM"
+        # crude extract: look for ops address near positive amount — PowerShell JSON is safer when available
+        $j = $txRaw | ConvertFrom-Json
+        foreach ($b in @($j.balanceChanges)) {
+          if ($b.coinType -ne $coinType) { continue }
+          $owner = [string]$b.owner.AddressOwner
+          if ($owner -and $owner.ToLower().Contains($OPS_ADDR.Substring(2).ToLower())) {
+            $amt = [int64]$b.amount
+            if ($amt -gt 0) { $opsAmt = [math]::Round($amt / 100000000.0, 8) }
+          }
+        }
+      } catch {
+        Write-Host ("allocate: could not parse ops credit from digest, using amount=$amount")
+      }
+    }
+    & $alloc -OpsAmount10mm $opsAmt -Height ([int]$heightAfter) -Digest $digest -Execute
+  } catch {
+    Write-Host ("allocate_mine_rewards warning: " + $_)
+  }
+}
+
 # GitHub site update
 $publish = Join-Path $here "publish_site.ps1"
 if (Test-Path $publish) {

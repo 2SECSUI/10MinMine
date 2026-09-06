@@ -32,3 +32,10 @@ Bot posts a 12-hour block/reward list to @TenMinMine (not from this laptop scrip
 Cetus/Turbos buys alone do **not** register. Only this path / site Send / mine does.
 
 Mint log then shows each registered holder’s share (you get less; they get some).
+
+## Post-mine allocation (until first halving @ 210000)
+After each mine, `allocate_mine_rewards.ps1` splits **ops registry share**:
+- **75%** → Aftermath farm rewards
+- **20%** → Cetus pool `0xdee1982f…` (10MM-only until in range, then with SUI)
+- **5%** → Turbos pool `0xaaf7498f…`
+Other registered wallets keep their on-chain share (e.g. ~3.333) as developer costs.
