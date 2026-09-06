@@ -19,6 +19,81 @@ async function loadDashboard(address) {
 }
 window.addEventListener("tenmm-connected", (event) => loadDashboard(event.detail.address));
 let countdownAnchor = null;
+
+const HALVING_INTERVAL = 210000;
+const BLOCK_SECS = 600;
+const INITIAL_SUBSIDY_10MM = 50;
+const subsidyAtHeight = (height) => {
+  const era = Math.floor(height / HALVING_INTERVAL);
+  if (era >= 64) return 0;
+  return INITIAL_SUBSIDY_10MM / (2 ** era);
+};
+const formatDuration = (secs) => {
+  if (!Number.isFinite(secs) || secs < 0) return "—";
+  const d = Math.floor(secs / 86400);
+  const h = Math.floor((secs % 86400) / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  if (d >= 365) {
+    const y = (secs / (365.25 * 86400));
+    return `~${y.toFixed(1)} years`;
+  }
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+};
+function renderHalvings(anchorTs, currentHeight) {
+  const body = $("halving-body");
+  if (!body) return;
+  body.replaceChildren();
+  const now = Math.floor(Date.now() / 1000);
+  const baseTs = Number.isFinite(Number(anchorTs)) && Number(anchorTs) > 0
+    ? Number(anchorTs)
+    : now;
+  const height = Number(currentHeight) || 0;
+  const horizon = now + Math.floor(10 * 365.25 * 86400);
+  const rows = [];
+  let era = Math.floor(height / HALVING_INTERVAL) + 1;
+  while (era < 64) {
+    const atHeight = era * HALVING_INTERVAL;
+    const blocksAway = Math.max(0, atHeight - height);
+    const when = baseTs + blocksAway * BLOCK_SECS;
+    if (when > horizon) break;
+    const newSubsidy = subsidyAtHeight(atHeight);
+    rows.push({ era, atHeight, newSubsidy, when, blocksAway });
+    era += 1;
+  }
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="5">No halvings fall inside the next 10 years from the current height.</td></tr>`;
+    return;
+  }
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    const whenDate = new Date(row.when * 1000);
+    const whenText = whenDate.toLocaleString(undefined, {
+      weekday: "short", year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit", timeZoneName: "short"
+    });
+    const cells = [
+      `Halving #${row.era}`,
+      String(row.atHeight),
+      `${row.newSubsidy} 10MM / block`,
+      whenText,
+      formatDuration(row.when - now),
+    ];
+    cells.forEach((text, i) => {
+      const td = document.createElement("td");
+      if (i === 0) {
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = text;
+        td.append(pill);
+      } else td.textContent = text;
+      tr.append(td);
+    });
+    body.append(tr);
+  });
+}
+
 const wallClockNextBoundary = () => {
   const now = Math.floor(Date.now() / 1000);
   return (Math.floor(now / 600) + 1) * 600;
@@ -40,18 +115,33 @@ async function loadCountdownAnchor() {
   try {
     const status = await json('public/mine-status.json');
     countdownAnchor = parseStatusTs(status);
+    const height = Number(status.block_height ?? status.height ?? status.lastBlockHeight ?? 0);
+    const lastTs = Number(status.last_block_ts);
+    const anchorForHalving = Number.isFinite(lastTs) && lastTs > 0 ? lastTs : countdownAnchor;
+    if (height !== lastHalvingHeight || true) {
+      renderHalvings(anchorForHalving, height);
+      lastHalvingHeight = height;
+    }
   } catch {
     /* keep prior anchor */
   }
 }
+let lastHalvingHeight = null;
 const updateCountdown = () => {
   const el = $('countdown');
   if (!el) return;
   const now = Math.floor(Date.now() / 1000);
   const next = countdownAnchor || wallClockNextBoundary();
   const left = Math.max(0, next - now);
-  const label = countdownAnchor ? 'Next mine in' : 'Next boundary in';
-  el.textContent = `${label} ${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+  el.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+  const sub = $('countdown-sub');
+  if (sub) {
+    if (left === 0) sub.textContent = 'Block is mineable now · laptop loop will catch the next owed height';
+    else if (countdownAnchor) sub.textContent = `Next mine in ${Math.floor(left / 60)}m ${left % 60}s · synced to last mined block`;
+    else sub.textContent = 'Waiting for mine-status.json · showing wall-clock boundary';
+  }
+  const mineCopy = $('countdown-mine');
+  if (mineCopy) mineCopy.textContent = left === 0 ? 'Ready now ↑' : `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')} ↑`;
 };
 const field = (obj, names) => names.map((name) => obj[name]).find((value) => value !== undefined && value !== null);
 const hasValue = (value) => value !== undefined && value !== null && value !== "";

@@ -94,7 +94,7 @@ Write-Host ("wrote site json height=" + $Height + " total=" + $totalS)
 
 Push-Location $REPO_DIR
 try {
-  git pull --ff-only origin main 2>&1 | Out-Host
+  git pull --rebase --autostash origin main 2>&1 | ForEach-Object { Write-Host $_ }
   git add -- site/data/mine-status.json site/data/mine-log.json site/public/mine-status.json site/public/mine-log.json
   git diff --cached --quiet
   if ($LASTEXITCODE -eq 0) {
@@ -102,7 +102,7 @@ try {
   } else {
     $msg = "mint log: height $Height $Digest"
     git -c user.name="10MinMine Ops" -c user.email="ops@10minmine.local" commit -m $msg 2>&1 | Out-Host
-    git push origin HEAD 2>&1 | Out-Host
+    git push origin HEAD 2>&1 | ForEach-Object { Write-Host $_ }
     if ($LASTEXITCODE -ne 0) {
       Write-Host "ERROR: git push failed - sign in to GitHub if needed"
       exit 1
