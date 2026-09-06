@@ -66,3 +66,23 @@ if (Test-Path $publish) {
 } else {
   Write-Warning "publish_site.ps1 missing - skipped GitHub update"
 }
+
+# Post every mined block to @TenMinMine via X API
+$caption = @"
+10MinMine block mined
+50 10MM/block · $blocks block(s) · +${amount} 10MM
+Height $heightAfter
+https://suiscan.xyz/mainnet/tx/$digest
+https://2secsui.github.io/10MinMine/site/
+#Sui #10MM #10MinMine
+"@
+$postX = Join-Path $here "post_x.ps1"
+if (Test-Path $postX) {
+  try {
+    & $postX -Text $caption
+  } catch {
+    Write-Warning ("X post failed: " + $_)
+  }
+} else {
+  Write-Warning "post_x.ps1 missing - skipped X"
+}

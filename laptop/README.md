@@ -20,3 +20,13 @@ Each successful mine:
 4. `git commit` + `git push` so https://2secsui.github.io/10MinMine/site/ refreshes
 
 X batch images every 20 blocks still run on the bot (optional).
+
+
+## X posts (every mined block)
+
+1. Open https://developer.x.com/ signed in as **@TenMinMine**
+2. Create a Project/App → permissions **Read and Write** → regenerate Access Token + Secret
+3. Add pay-per-use credits (write posts are paid on X now)
+4. Copy keys into `secrets/x-api.env` (from `x-api.env.example`)
+
+Each successful `mine_once` / loop mine then tweets height, amount, Suiscan + site links.
