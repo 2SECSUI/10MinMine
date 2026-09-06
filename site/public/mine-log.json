@@ -90,5 +90,69 @@
       }
     ],
     "note": "50 10MM per block"
+  },
+  {
+    "ts": "2026-09-06T19:26:04.856138+01:00",
+    "height": 11,
+    "blocks": 1,
+    "minted_raw": "5000000000",
+    "amount_10mm": "50",
+    "event": "mainnet_mine",
+    "digest": "3r4RCxrEEzg9MhGS2Ez1cgXsW4wjUwQJ5nKRb6uKwZyh",
+    "rewarded": [
+      {
+        "address": "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+        "amount_10mm": "50"
+      }
+    ],
+    "note": "50 10MM per block"
+  },
+  {
+    "ts": "2026-09-06T19:36:56.858309+01:00",
+    "height": 12,
+    "blocks": 1,
+    "minted_raw": "5000000000",
+    "amount_10mm": "50",
+    "event": "mainnet_mine",
+    "digest": "91DJpvo4hxeATufqiNj8M4VfgjDLZZKo34zMfcgTzo7z",
+    "rewarded": [
+      {
+        "address": "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+        "amount_10mm": "50"
+      }
+    ],
+    "note": "50 10MM per block"
+  },
+  {
+    "ts": "2026-09-06T19:47:06.410718+01:00",
+    "height": 13,
+    "blocks": 1,
+    "minted_raw": "5000000000",
+    "amount_10mm": "50",
+    "event": "mainnet_mine",
+    "digest": "HKApEn3MHy2TcXWJBWmL7DCyfc48wVvLLF1pD5VDFfsf",
+    "rewarded": [
+      {
+        "address": "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+        "amount_10mm": "50"
+      }
+    ],
+    "note": "50 10MM per block"
+  },
+  {
+    "ts": "2026-09-06T19:56:43.608872+01:00",
+    "height": 14,
+    "blocks": 1,
+    "minted_raw": "5000000000",
+    "amount_10mm": "50",
+    "event": "mainnet_mine",
+    "digest": "FJN5FqGzryitzz9iMHgtmMUmJqhj5aVstoaGtPo4jh57",
+    "rewarded": [
+      {
+        "address": "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+        "amount_10mm": "50"
+      }
+    ],
+    "note": "50 10MM per block"
   }
 ]

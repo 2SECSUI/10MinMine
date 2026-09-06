@@ -105,15 +105,20 @@ fi
 
 log "success height ${HEIGHT}->${NEW_HEIGHT} blocks=$BLOCKS amount=${AMOUNT_10MM} digest=$DIGEST"
 
-# Push mint log if repo present
-if [[ -d "$REPO_DIR/.git" ]]; then
+# Append mint log locally every mine; GitHub push + X only every PUBLISH_EVERY blocks.
+PUBLISH_EVERY="${PUBLISH_EVERY:-20}"
+
+append_mint_log() {
   python3 - "$REPO_DIR" "$NEW_HEIGHT" "$BLOCKS" "$AMOUNT_RAW" "$AMOUNT_10MM" "$DIGEST" "$OPS_ADDR" <<'PY'
-import json,sys
+import json,sys,shutil
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 repo, height, blocks, minted_raw, amount, digest, ops = sys.argv[1:8]
 root = Path(repo)/"site"/"data"
+pub = Path(repo)/"site"/"public"
 root.mkdir(parents=True, exist_ok=True)
+pub.mkdir(parents=True, exist_ok=True)
+amt = str(amount).rstrip("0").rstrip(".") if "." in str(amount) else str(amount)
 status = {
   "network": "mainnet",
   "packageId": "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98",
@@ -131,10 +136,10 @@ entry = {
   "height": int(height),
   "blocks": int(blocks),
   "minted_raw": str(minted_raw),
-  "amount_10mm": str(amount).rstrip("0").rstrip(".") if "." in str(amount) else str(amount),
+  "amount_10mm": amt,
   "event": "mainnet_mine",
   "digest": digest,
-  "rewarded": [{"address": ops, "amount_10mm": str(amount).rstrip("0").rstrip(".") if "." in str(amount) else str(amount)}],
+  "rewarded": [{"address": ops, "amount_10mm": amt}],
   "note": "50 10MM per block",
 }
 if digest and not any(e.get("digest")==digest for e in log):
@@ -142,46 +147,73 @@ if digest and not any(e.get("digest")==digest for e in log):
 elif not digest:
   log.append(entry)
 log_path.write_text(json.dumps(log, indent=2)+"\n")
-print("wrote", root)
+# Mirror to public/ (site dashboard reads public/)
+shutil.copyfile(root/"mine-status.json", pub/"mine-status.json")
+shutil.copyfile(log_path, pub/"mine-log.json")
+# Also mirror scratch workspace copies when present
+for extra in (Path("/workspace/10MinMine/site/data"), Path("/workspace/10MinMine/site/public")):
+  if extra.parent.exists():
+    extra.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(root/"mine-status.json", extra/"mine-status.json")
+    shutil.copyfile(log_path, extra/"mine-log.json")
+print(f"wrote mint log entries={len(log)} height={height}", flush=True)
 PY
-  (
-    cd "$REPO_DIR"
-    git pull --ff-only origin main >/dev/null 2>&1 || true
-    git add site/data/mine-status.json site/data/mine-log.json
-    if git diff --cached --quiet; then
-      log "github: nothing to commit"
-    else
-      GIT_AUTHOR_NAME='10MinMine Ops' GIT_AUTHOR_EMAIL='ops@10minmine.local' \
-      GIT_COMMITTER_NAME='10MinMine Ops' GIT_COMMITTER_EMAIL='ops@10minmine.local' \
-        git commit -m "mint log: height ${NEW_HEIGHT} ${DIGEST}" >/dev/null
-      git push origin HEAD >/dev/null
-      log "github: pushed height ${NEW_HEIGHT}"
-    fi
-  ) || log "github: update failed (non-fatal)"
+}
+
+if [[ -d "$REPO_DIR/.git" ]]; then
+  append_mint_log || log "mint log append failed (non-fatal)"
+  if (( NEW_HEIGHT % PUBLISH_EVERY == 0 )); then
+    (
+      cd "$REPO_DIR"
+      git pull --ff-only origin main >/dev/null 2>&1 || true
+      git add site/data/mine-status.json site/data/mine-log.json site/public/mine-status.json site/public/mine-log.json
+      if git diff --cached --quiet; then
+        log "github: nothing to commit at height ${NEW_HEIGHT}"
+      else
+        GIT_AUTHOR_NAME='10MinMine Ops' GIT_AUTHOR_EMAIL='ops@10minmine.local' \
+        GIT_COMMITTER_NAME='10MinMine Ops' GIT_COMMITTER_EMAIL='ops@10minmine.local' \
+          git commit -m "mint log: height ${NEW_HEIGHT} (every ${PUBLISH_EVERY}) ${DIGEST}" >/dev/null
+        git push origin HEAD >/dev/null
+        log "github: pushed full mint log at height ${NEW_HEIGHT}"
+      fi
+    ) || log "github: update failed (non-fatal)"
+  else
+    log "mint log local-only (next site/X publish at height $(( (NEW_HEIGHT / PUBLISH_EVERY + 1) * PUBLISH_EVERY )))"
+  fi
 else
-  log "no REPO_DIR at $REPO_DIR — skip github"
+  log "no REPO_DIR at $REPO_DIR — skip mint log"
 fi
 
-# Always queue an X post (never skip). The 10m Grok routine / post_pending_x.sh publishes it.
-if [[ -n "$DIGEST" ]]; then
+# Queue X only every PUBLISH_EVERY heights (summary + card). Never skip when due.
+if [[ -n "$DIGEST" ]] && (( NEW_HEIGHT % PUBLISH_EVERY == 0 )); then
+  CARD="/workspace/10MinMine/site/public/x-mine-card-latest.png"
+  SHORT_DIGEST="${DIGEST:0:8}…${DIGEST: -4}"
+  WINDOW_START=$(( NEW_HEIGHT - PUBLISH_EVERY + 1 ))
+  BATCH_BLOCKS="$PUBLISH_EVERY"
+  BATCH_AMOUNT="$(python3 -c "print($PUBLISH_EVERY * $SUBSIDY_10MM_PER_BLOCK)")"
+  REWARDED_SHORT="0x5818…4d0a · ${BATCH_AMOUNT} 10MM"
+  if [[ -f /workspace/10MinMine/scripts/make_mine_x_card.py ]]; then
+    python3 /workspace/10MinMine/scripts/make_mine_x_card.py \
+      --height "$NEW_HEIGHT" --blocks "$BATCH_BLOCKS" --amount "${BATCH_AMOUNT} 10MM" \
+      --digest "$SHORT_DIGEST" --rewarded "$REWARDED_SHORT" \
+      --output "$CARD" "/workspace/10MinMine/site/public/x-mine-card-h${NEW_HEIGHT}.png" /workspace/uploads/x-mine-card-latest.png \
+      >/dev/null 2>&1 || log "card generate failed (non-fatal)"
+  fi
   CAPTION="$(cat <<MSG
-⛏ 10MinMine block mined
-50 10MM per block · ${BLOCKS} block(s) · +${AMOUNT_10MM} 10MM
-Height ${NEW_HEIGHT}
-https://suiscan.xyz/mainnet/tx/${DIGEST}
-https://2secsui.github.io/10MinMine/site/
+⛏ 10MinMine · ${PUBLISH_EVERY} blocks
+Heights ${WINDOW_START}–${NEW_HEIGHT} · +${BATCH_AMOUNT} 10MM (50/block)
+Latest tx: https://suiscan.xyz/mainnet/tx/${DIGEST}
+Full mint log: https://2secsui.github.io/10MinMine/site/
 #Sui #SuiNetwork #10MM #10MinMine #DeFi
 MSG
 )"
-  printf '%s
-' "$CAPTION" >&2
+  printf '%s\n' "$CAPTION" >&2
   QUEUE="${QUEUE:-/workspace/10MinMine/scripts/pending_x_posts.jsonl}"
-  python3 - "$QUEUE" "$DIGEST" "$NEW_HEIGHT" "$BLOCKS" "$AMOUNT_10MM" "$CAPTION" <<'PY2'
+  python3 - "$QUEUE" "$DIGEST" "$NEW_HEIGHT" "$BATCH_BLOCKS" "$BATCH_AMOUNT" "$CAPTION" "$CARD" <<'PY2'
 import json,sys,time
 from pathlib import Path
-queue, digest, height, blocks, amount, caption = sys.argv[1:7]
+queue, digest, height, blocks, amount, caption, image = sys.argv[1:8]
 Path(queue).parent.mkdir(parents=True, exist_ok=True)
-# dedupe by digest
 lines=[]
 if Path(queue).exists():
   for line in Path(queue).read_text().splitlines():
@@ -192,16 +224,15 @@ if Path(queue).exists():
       continue
     if o.get('digest')!=digest:
       lines.append(line)
-row=json.dumps({"ts":int(time.time()),"digest":digest,"height":int(height),"blocks":int(blocks),"amount_10mm":str(amount),"caption":caption,"posted":False}, ensure_ascii=False)
+row=json.dumps({"ts":int(time.time()),"digest":digest,"height":int(height),"blocks":int(blocks),"amount_10mm":str(amount),"caption":caption,"image":image,"posted":False,"every":20}, ensure_ascii=False)
 lines.append(row)
-Path(queue).write_text("
-".join(lines)+"
-")
-print(f"queued X post digest={digest}", flush=True)
+Path(queue).write_text("\n".join(lines)+"\n")
+print(f"queued X digest={digest} height={height} image={image}", flush=True)
 PY2
-  # Try local poster if present (best-effort)
   if [[ -x /workspace/10MinMine/scripts/post_pending_x.sh ]]; then
     /bin/bash /workspace/10MinMine/scripts/post_pending_x.sh || true
   fi
+elif [[ -n "$DIGEST" ]]; then
+  log "skip X (every ${PUBLISH_EVERY} blocks; next at height $(( (NEW_HEIGHT / PUBLISH_EVERY + 1) * PUBLISH_EVERY )))"
 fi
 exit 0
