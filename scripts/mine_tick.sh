@@ -184,26 +184,25 @@ else
   log "no REPO_DIR at $REPO_DIR — skip mint log"
 fi
 
-# Queue X only every PUBLISH_EVERY heights (summary + card). Never skip when due.
+# Queue X only every PUBLISH_EVERY heights: image lists all blocks+rewards. Quiet otherwise.
 if [[ -n "$DIGEST" ]] && (( NEW_HEIGHT % PUBLISH_EVERY == 0 )); then
   CARD="/workspace/10MinMine/site/public/x-mine-card-latest.png"
-  SHORT_DIGEST="${DIGEST:0:8}…${DIGEST: -4}"
   WINDOW_START=$(( NEW_HEIGHT - PUBLISH_EVERY + 1 ))
   BATCH_BLOCKS="$PUBLISH_EVERY"
   BATCH_AMOUNT="$(python3 -c "print($PUBLISH_EVERY * $SUBSIDY_10MM_PER_BLOCK)")"
-  REWARDED_SHORT="0x5818…4d0a · ${BATCH_AMOUNT} 10MM"
-  if [[ -f /workspace/10MinMine/scripts/make_mine_x_card.py ]]; then
-    python3 /workspace/10MinMine/scripts/make_mine_x_card.py \
-      --height "$NEW_HEIGHT" --blocks "$BATCH_BLOCKS" --amount "${BATCH_AMOUNT} 10MM" \
-      --digest "$SHORT_DIGEST" --rewarded "$REWARDED_SHORT" \
+  LOG_JSON="${REPO_DIR}/site/data/mine-log.json"
+  if [[ -f /workspace/10MinMine/scripts/make_mine_x_batch_card.py ]]; then
+    python3 /workspace/10MinMine/scripts/make_mine_x_batch_card.py \
+      --log "$LOG_JSON" --start "$WINDOW_START" --end "$NEW_HEIGHT" \
       --output "$CARD" "/workspace/10MinMine/site/public/x-mine-card-h${NEW_HEIGHT}.png" /workspace/uploads/x-mine-card-latest.png \
-      >/dev/null 2>&1 || log "card generate failed (non-fatal)"
+      >/dev/null 2>&1 || log "batch card failed (non-fatal)"
   fi
   CAPTION="$(cat <<MSG
 ⛏ 10MinMine · ${PUBLISH_EVERY} blocks
 Heights ${WINDOW_START}–${NEW_HEIGHT} · +${BATCH_AMOUNT} 10MM (50/block)
-Latest tx: https://suiscan.xyz/mainnet/tx/${DIGEST}
-Full mint log: https://2secsui.github.io/10MinMine/site/
+Full list in image · mint log on site
+https://2secsui.github.io/10MinMine/site/
+Latest: https://suiscan.xyz/mainnet/tx/${DIGEST}
 #Sui #SuiNetwork #10MM #10MinMine #DeFi
 MSG
 )"
@@ -224,15 +223,15 @@ if Path(queue).exists():
       continue
     if o.get('digest')!=digest:
       lines.append(line)
-row=json.dumps({"ts":int(time.time()),"digest":digest,"height":int(height),"blocks":int(blocks),"amount_10mm":str(amount),"caption":caption,"image":image,"posted":False,"every":20}, ensure_ascii=False)
+row=json.dumps({"ts":int(time.time()),"digest":digest,"height":int(height),"blocks":int(blocks),"amount_10mm":str(amount),"caption":caption,"image":image,"posted":False,"every":20,"kind":"batch20"}, ensure_ascii=False)
 lines.append(row)
 Path(queue).write_text("\n".join(lines)+"\n")
-print(f"queued X digest={digest} height={height} image={image}", flush=True)
+print(f"queued batch X digest={digest} height={height}", flush=True)
 PY2
   if [[ -x /workspace/10MinMine/scripts/post_pending_x.sh ]]; then
     /bin/bash /workspace/10MinMine/scripts/post_pending_x.sh || true
   fi
 elif [[ -n "$DIGEST" ]]; then
-  log "skip X (every ${PUBLISH_EVERY} blocks; next at height $(( (NEW_HEIGHT / PUBLISH_EVERY + 1) * PUBLISH_EVERY )))"
+  log "quiet until height $(( (NEW_HEIGHT / PUBLISH_EVERY + 1) * PUBLISH_EVERY )) (site+X)"
 fi
 exit 0
