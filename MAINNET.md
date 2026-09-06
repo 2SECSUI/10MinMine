@@ -26,3 +26,10 @@ Old immutable package `0x06fe3c16…0f8a` is abandoned (reward claim overflow). 
 - On each `mine`, block rewards are paid to registered holders immediately
 - Buy/sell against seeded Market of already-mined coins (no mint-on-buy)
 - Use `protocol_transfer` so holder registry / rewards follow
+
+## Cetus LP (v2)
+- **Pool:** `0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2`
+- **Position:** `0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be` (ops wallet)
+- **Pair:** 10MM / SUI
+- **Position URL:** https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be
+- **Create/add tx:** `F5EfspfCdDRGKyo46rPXmfAMipaBUp7KyQYsTUBtoiyt`
