@@ -16,16 +16,24 @@
     isHexId(CONFIG.rewardPoolId) &&
     isHexId(CONFIG.holderRegistryId) &&
     isHexId(CONFIG.feePotId) &&
-    isHexId(CONFIG.marketId) &&
     isHexId(CONFIG.clockId)
   );
+  const cetusBuyUrl = CONFIG.cetusBuyUrl || CONFIG.poolUrl || '';
+  const cetusSellUrl = CONFIG.cetusSellUrl || CONFIG.poolUrl || '';
 
   const chain = `sui:${CONFIG.network}`;
   const setStatus = (text) => { statusEl.textContent = text; };
   const decimalToMist = (input) => { const value = String(input || '').trim(); if (!/^[0-9]+([.][0-9]{1,9})?$/.test(value)) throw new Error('Enter a SUI amount with up to 9 decimal places.'); const parts = value.split('.'); return BigInt(parts[0]) * 1000000000n + BigInt(((parts[1] || '') + '000000000').slice(0, 9)); };
   const decimalToBaseUnits = (input, decimals, label) => { const value = String(input || "").trim(); const pattern = new RegExp("^[0-9]+([.][0-9]{1," + decimals + "})?" + String.fromCharCode(36)); if (!pattern.test(value)) throw new Error("Enter a " + label + " amount with up to " + decimals + " decimal places."); const parts = value.split("."); return BigInt(parts[0]) * (10n ** BigInt(decimals)) + BigInt(((parts[1] || "") + "0".repeat(decimals)).slice(0, decimals)); };
   const setActionsEnabled = (on) => {
-    document.querySelectorAll('[data-action]').forEach((b) => { b.disabled = !on; });
+    document.querySelectorAll('[data-action]').forEach((b) => {
+      const action = b.dataset.action;
+      if ((action === 'buy' && cetusBuyUrl) || (action === 'sell' && cetusSellUrl)) {
+        b.disabled = false;
+        return;
+      }
+      b.disabled = !on;
+    });
     $('disconnect').disabled = !account;
   };
 
@@ -87,6 +95,16 @@
   async function call(action) {
     try {
       if (!ALLOWED_ACTIONS.has(action)) return setStatus('Blocked: unknown action.');
+      if (action === 'buy') {
+        if (!cetusBuyUrl) return setStatus('Cetus buy link not configured.');
+        window.open(cetusBuyUrl, '_blank', 'noopener,noreferrer');
+        return setStatus('Opened Cetus to buy 10MM with SUI. Complete the swap in the Cetus dapp.');
+      }
+      if (action === 'sell') {
+        if (!cetusSellUrl) return setStatus('Cetus sell link not configured.');
+        window.open(cetusSellUrl, '_blank', 'noopener,noreferrer');
+        return setStatus('Opened Cetus to sell 10MM for SUI. Complete the swap in the Cetus dapp.');
+      }
       if (!wallet || !account) return setStatus('Connect a wallet first.');
       if (!configured) return setStatus('Configure verified package/object IDs in site/config.js first.');
       if (!wallet.features['sui:signAndExecuteTransaction']) return setStatus('Wallet cannot sign Sui transactions.');
@@ -100,34 +118,6 @@
           arguments: [
             tx.object(CONFIG.rewardPoolId),
             tx.object(CONFIG.holderRegistryId),
-            tx.object(CONFIG.clockId),
-          ],
-        });
-      } else if (action === 'buy') {
-        const amount = decimalToMist($('buyAmount').value);
-        if (amount <= 0n) return setStatus('Enter a buy amount in SUI.');
-        const payment = tx.splitCoins(tx.gas, [amount]);
-        tx.moveCall({
-          target,
-          arguments: [
-            tx.object(CONFIG.rewardPoolId),
-            tx.object(CONFIG.marketId),
-            tx.object(CONFIG.feePotId),
-            tx.object(CONFIG.holderRegistryId),
-            payment,
-            tx.object(CONFIG.clockId),
-          ],
-        });
-      } else if (action === 'sell') {
-        const coins = await client.getCoins({ owner: account.address, coinType: `${CONFIG.packageId}::tenmm::TENMM` });
-        if (!coins.data?.length) return setStatus('No 10MM coin found in this wallet.');
-        tx.moveCall({
-          target,
-          arguments: [
-            tx.object(CONFIG.rewardPoolId),
-            tx.object(CONFIG.marketId),
-            tx.object(CONFIG.holderRegistryId),
-            tx.object(coins.data[0].coinObjectId),
             tx.object(CONFIG.clockId),
           ],
         });
@@ -207,3 +197,6 @@
   }
   refreshStats();
   setInterval(refreshStats, 60_000);
+
+  // Buy/Sell open Cetus without a prior site wallet connect.
+  setActionsEnabled(Boolean(cetusBuyUrl || cetusSellUrl));
