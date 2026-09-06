@@ -105,7 +105,7 @@ fi
 
 log "success height ${HEIGHT}->${NEW_HEIGHT} blocks=$BLOCKS amount=${AMOUNT_10MM} digest=$DIGEST"
 
-# Append mint log locally every mine; GitHub push + X only every PUBLISH_EVERY blocks.
+# Append mint log every mine; push site every mine; X batch only every PUBLISH_EVERY blocks.
 PUBLISH_EVERY="${PUBLISH_EVERY:-20}"
 
 append_mint_log() {
@@ -119,21 +119,12 @@ pub = Path(repo)/"site"/"public"
 root.mkdir(parents=True, exist_ok=True)
 pub.mkdir(parents=True, exist_ok=True)
 amt = str(amount).rstrip("0").rstrip(".") if "." in str(amount) else str(amount)
-status = {
-  "network": "mainnet",
-  "packageId": "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98",
-  "rewardPoolId": "0x32423737a8e607111bc5ecb2ac49d226cc948abe4d690b55c20d63b09ee6e619",
-  "height": int(height),
-  "lastMineDigest": digest,
-  "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-  "launchAt": "2026-09-06T16:44:56Z",
-}
-(root/"mine-status.json").write_text(json.dumps(status, indent=2)+"\n")
+h = int(height)
 log_path = root/"mine-log.json"
 log = json.loads(log_path.read_text()) if log_path.exists() else []
 entry = {
   "ts": datetime.now(timezone(timedelta(hours=1))).isoformat(),
-  "height": int(height),
+  "height": h,
   "blocks": int(blocks),
   "minted_raw": str(minted_raw),
   "amount_10mm": amt,
@@ -147,23 +138,39 @@ if digest and not any(e.get("digest")==digest for e in log):
 elif not digest:
   log.append(entry)
 log_path.write_text(json.dumps(log, indent=2)+"\n")
-# Mirror to public/ (site dashboard reads public/)
+total = 0.0
+for e in log:
+  try: total += float(e.get("amount_10mm") or 0)
+  except Exception: pass
+total_s = str(int(total)) if float(total).is_integer() else str(total)
+status = {
+  "network": "mainnet",
+  "packageId": "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98",
+  "rewardPoolId": "0x32423737a8e607111bc5ecb2ac49d226cc948abe4d690b55c20d63b09ee6e619",
+  "height": h,
+  "block_height": h,
+  "lastBlockHeight": h,
+  "total_minted_10mm": total_s,
+  "current_subsidy_10mm": "50",
+  "lastMineDigest": digest,
+  "updatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+  "launchAt": "2026-09-06T16:44:56Z",
+}
+(root/"mine-status.json").write_text(json.dumps(status, indent=2)+"\n")
 shutil.copyfile(root/"mine-status.json", pub/"mine-status.json")
 shutil.copyfile(log_path, pub/"mine-log.json")
-# Also mirror scratch workspace copies when present
 for extra in (Path("/workspace/10MinMine/site/data"), Path("/workspace/10MinMine/site/public")):
   if extra.parent.exists():
     extra.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(root/"mine-status.json", extra/"mine-status.json")
     shutil.copyfile(log_path, extra/"mine-log.json")
-print(f"wrote mint log entries={len(log)} height={height}", flush=True)
+print(f"wrote mint log entries={len(log)} height={h} total={total_s}", flush=True)
 PY
 }
 
 if [[ -d "$REPO_DIR/.git" ]]; then
   append_mint_log || log "mint log append failed (non-fatal)"
-  if (( NEW_HEIGHT % PUBLISH_EVERY == 0 )); then
-    (
+  (
       cd "$REPO_DIR"
       git pull --ff-only origin main >/dev/null 2>&1 || true
       git add site/data/mine-status.json site/data/mine-log.json site/public/mine-status.json site/public/mine-log.json
@@ -172,14 +179,11 @@ if [[ -d "$REPO_DIR/.git" ]]; then
       else
         GIT_AUTHOR_NAME='10MinMine Ops' GIT_AUTHOR_EMAIL='ops@10minmine.local' \
         GIT_COMMITTER_NAME='10MinMine Ops' GIT_COMMITTER_EMAIL='ops@10minmine.local' \
-          git commit -m "mint log: height ${NEW_HEIGHT} (every ${PUBLISH_EVERY}) ${DIGEST}" >/dev/null
+          git commit -m "mint log: height ${NEW_HEIGHT} ${DIGEST}" >/dev/null
         git push origin HEAD >/dev/null
-        log "github: pushed full mint log at height ${NEW_HEIGHT}"
+        log "github: pushed site at height ${NEW_HEIGHT}"
       fi
     ) || log "github: update failed (non-fatal)"
-  else
-    log "mint log local-only (next site/X publish at height $(( (NEW_HEIGHT / PUBLISH_EVERY + 1) * PUBLISH_EVERY )))"
-  fi
 else
   log "no REPO_DIR at $REPO_DIR — skip mint log"
 fi
@@ -232,6 +236,6 @@ PY2
     /bin/bash /workspace/10MinMine/scripts/post_pending_x.sh || true
   fi
 elif [[ -n "$DIGEST" ]]; then
-  log "quiet until height $(( (NEW_HEIGHT / PUBLISH_EVERY + 1) * PUBLISH_EVERY )) (site+X)"
+  log "quiet X until height $(( (NEW_HEIGHT / PUBLISH_EVERY + 1) * PUBLISH_EVERY ))"
 fi
 exit 0

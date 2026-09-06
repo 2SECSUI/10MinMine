@@ -32,8 +32,14 @@ export const CONFIG = {
   ],
   stats: {
     blockReward: '50 10MM / block (then halvings)',
+    currentSubsidy: '50 10MM / block',
     blockTime: '~10 minutes',
     maxSupply: '21,000,000 10MM',
     decimals: 8,
+    holders: 'Hold-to-earn registry live',
+    price: 'Trade on Cetus 10MM/SUI',
+    feePot: '0.01 SUI tip / mine when funded',
+    holdSlot: 'Rewards each ~10m block · see countdown',
+    pool: 'Cetus 10MM/SUI',
   },
 };

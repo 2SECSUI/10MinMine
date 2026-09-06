@@ -1,5 +1,6 @@
 import { CONFIG } from "./config.js";
 import { SuiClient, getFullnodeUrl } from "https://esm.sh/@mysten/sui@1.39.0/client";
+// Note: public JSON-RPC may be deprecated; dashboard falls back to public/mine-*.json files.
 const $ = (id) => document.getElementById(id);
 const client = new SuiClient({ url: getFullnodeUrl(CONFIG.network) });
 const fmt = (raw, decimals) => { try { const n = BigInt(raw || 0); const base = 10n ** BigInt(decimals); const whole = n / base; const frac = (n % base).toString().padStart(decimals, "0").replace(/0+$/, ""); return frac ? `${whole}.${frac}` : whole.toString(); } catch { return "—"; } };
@@ -52,29 +53,89 @@ async function refreshMintData() {
   try { const log = await json("public/mine-log.json"); renderMintLog(log); } catch { renderMintLog([]); $("mint-log-status").textContent = "Mint log unavailable"; }
 }
 async function refreshMine() {
-  $("mine-network").textContent = CONFIG.network; $("stat-network").textContent = CONFIG.network;
   const stats = CONFIG.stats || {};
-  const statusPromise = json("public/mine-status.json").catch(() => null);
-  if (hasValue(stats.currentSubsidy)) $("mine-subsidy").textContent = stats.currentSubsidy;
-  if (hasValue(stats.lastBlockHeight)) $("mine-height").textContent = stats.lastBlockHeight;
-  if (hasValue(stats.supply)) $("mine-minted").textContent = stats.supply;
-  let liveHeight = false; let liveSubsidy = false;
+  $("mine-network").textContent = CONFIG.network;
+  $("stat-network").textContent = CONFIG.network;
+
+  // Always seed from config so cards never stay on "Pending…"
+  $("stat-reward").textContent = stats.blockReward || "50 10MM / block (then halvings)";
+  $("mine-subsidy").textContent = stats.currentSubsidy || "50 10MM / block";
+  $("stat-holders").textContent = stats.holders || "Hold-to-earn registry live";
+  $("stat-price").textContent = stats.price || "Cetus 10MM/SUI LP";
+  $("stat-feepot").textContent = stats.feePot || "0.01 SUI tip / mine when funded";
+  if ($("mine-slot")) $("mine-slot").textContent = stats.holdSlot || "Pays each ~10m block · see countdown";
+
+  const pool = $("stat-pool");
+  if (pool) {
+    pool.replaceChildren();
+    if (CONFIG.poolUrl) {
+      const a = document.createElement("a");
+      a.href = CONFIG.poolUrl;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = "Open Cetus position";
+      pool.append(a);
+    } else {
+      pool.textContent = stats.pool || "Cetus pool linked at launch";
+    }
+  }
+
+  const status = await json("public/mine-status.json").catch(() => null);
+  let log = null;
+  try { log = await json("public/mine-log.json"); } catch {}
+
+  let height = null;
+  let minted = null;
+  let subsidy = null;
+
+  // Prefer published status files (works without public JSON-RPC)
+  if (status) {
+    height = status.block_height ?? status.height ?? status.lastBlockHeight ?? null;
+    minted = status.total_minted_10mm ?? status.totalMinted10mm ?? status.supply ?? null;
+    subsidy = status.current_subsidy_10mm ?? status.currentSubsidy ?? null;
+    if (hasValue(status.holders)) $("stat-holders").textContent = String(status.holders);
+    if (hasValue(status.price_note)) $("stat-price").textContent = String(status.price_note);
+    if (hasValue(status.fee_pot_note)) $("stat-feepot").textContent = String(status.fee_pot_note);
+    if (hasValue(status.hold_slot_note) && $("mine-slot")) $("mine-slot").textContent = String(status.hold_slot_note);
+    if (hasValue(status.block_reward_note)) $("stat-reward").textContent = String(status.block_reward_note);
+  }
+
+  if (Array.isArray(log) && log.length) {
+    if (minted == null) {
+      const total = log.reduce((s, e) => s + Number(e.amount_10mm || 0), 0);
+      if (total > 0) minted = total;
+    }
+    if (height == null) {
+      const maxH = Math.max(0, ...log.map((e) => Number(e.height || 0)));
+      if (maxH > 0) height = maxH;
+    }
+  }
+
+  // Optional live RPC (may fail after JSON-RPC shutoff — ignore errors)
   if (isHexId(CONFIG.rewardPoolId)) {
     try {
       const obj = await client.getObject({ id: CONFIG.rewardPoolId, options: { showContent: true } });
       const f = obj.data?.content?.fields || {};
-      const subsidy = field(f, ["current_subsidy", "subsidy"]); const height = field(f, ["block_height", "height"]);
-      if (hasValue(subsidy)) { $("mine-subsidy").textContent = `${subsidy} base units`; liveSubsidy = true; }
-      if (hasValue(height)) { $("mine-height").textContent = String(height); liveHeight = true; }
-      if (!hasValue(stats.blockReward)) $("stat-reward").textContent = subsidy == null ? "Connected · parsing fields…" : `${subsidy} base units / block`;
-    } catch { if (!hasValue(stats.currentSubsidy)) $("mine-subsidy").textContent = "Awaiting live object"; }
+      const liveSubsidy = field(f, ["current_subsidy", "subsidy"]);
+      const liveHeight = field(f, ["block_height", "height"]);
+      if (hasValue(liveHeight)) height = liveHeight;
+      if (hasValue(liveSubsidy)) {
+        // Move base units -> 10MM if it looks like raw (8 decimals)
+        const n = Number(liveSubsidy);
+        subsidy = (Number.isFinite(n) && n >= 1e6) ? (n / 1e8) : liveSubsidy;
+      }
+    } catch {}
   }
-  const status = await statusPromise;
-  if (status) {
-    if (!liveHeight && hasValue(status.block_height)) $("mine-height").textContent = String(status.block_height);
-    if (hasValue(status.total_minted_10mm)) $("mine-minted").textContent = `${status.total_minted_10mm} 10MM`;
-    if (!liveSubsidy && !hasValue(stats.blockReward) && hasValue(status.total_minted_10mm)) $("stat-reward").textContent = `Total minted: ${status.total_minted_10mm} 10MM`;
-  }
+
+  if (hasValue(height)) $("mine-height").textContent = String(height);
+  else $("mine-height").textContent = stats.lastBlockHeight || "—";
+
+  if (hasValue(minted)) $("mine-minted").textContent = `${minted} 10MM`;
+  else $("mine-minted").textContent = stats.supply || "—";
+
+  if (hasValue(subsidy)) $("mine-subsidy").textContent = `${subsidy} 10MM / block`;
+  $("stat-reward").textContent = stats.blockReward || (hasValue(subsidy) ? `${subsidy} 10MM / block` : "50 10MM / block (then halvings)");
 }
+
 function renderDapps() { const host = $("dapps"); (CONFIG.dapps || []).forEach((dapp) => { const el = dapp.url ? document.createElement("a") : document.createElement("span"); el.className = "dapp"; el.textContent = dapp.name; const note = document.createElement("small"); note.textContent = dapp.url ? "Open" : "Coming at launch"; el.append(" ", note); if (dapp.url) { el.href = dapp.url; el.target = "_blank"; el.rel = "noopener noreferrer"; } host.append(el); }); }
 renderDapps(); updateCountdown(); refreshMine(); refreshMintData(); setInterval(updateCountdown, 1000); setInterval(refreshMine, 60000); setInterval(refreshMintData, 60000);
