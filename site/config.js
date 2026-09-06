@@ -1,6 +1,7 @@
 // 10MM mainnet v2. Never put private keys here.
 export const CONFIG = {
   network: 'mainnet',
+  rpcUrl: 'https://sui-mainnet-endpoint.blockvision.org',
   packageId: '0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98',
   rewardPoolId: '0x32423737a8e607111bc5ecb2ac49d226cc948abe4d690b55c20d63b09ee6e619',
   holderRegistryId: '0x5c637f112680491744d2513484b78ca8c64c334dc9d4a3a6233c8f92dbd970e9',
@@ -29,7 +30,7 @@ export const CONFIG = {
     { name: 'Suilend', url: '' }, { name: 'Bluefin', url: '' },
     { name: 'Navi', url: '' }, { name: 'DeepTrade', url: '' },
     { name: 'AlphaLend', url: '' }, { name: 'TBook', url: '' },
-    { name: 'Turbos', url: 'https://turbos.finance/', note: 'Turbos \u2014 add when Cetus TVL grows; 10MM pool is not listed yet' }, { name: 'AlphaFi', url: '' },
+    { name: 'Turbos', url: 'https://app.turbos.finance/#/trade?input=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&output=0x2%3A%3Asui%3A%3ASUI', note: 'Live 10MM/SUI pool' }, { name: 'AlphaFi', url: '' },
     { name: 'Momentum', url: '' },
   ],
   stats: {

@@ -612,13 +612,19 @@
   <section class="panel" id="send">
     <div class="eyebrow">SEND 10MM</div><h2>Send with reward tracking</h2>
     <p>Use this official Send flow so the protocol can update your holder reward share with the transfer.</p>
+    <p id="send-hint" style="margin:0 0 12px;color:#9aa4b2;font-size:0.88rem">Connect Slush to see wallet balance vs registry-tracked principal.</p>
     <div class="send-form">
       <input id="sendRecipient" type="text" inputmode="text" autocomplete="off" placeholder="Recipient Sui address" aria-label="Recipient Sui address" />
       <input id="sendAmount" type="text" inputmode="decimal" placeholder="Amount (10MM)" aria-label="Amount in 10MM" />
       <button data-action="transfer" type="button" disabled>Send 10MM</button>
     </div>
     <div id="send-status" role="status"></div>
-    <div class="send-note"><strong>Important:</strong> Only transfers made with this official Send keep mining rewards tracked. Normal wallet sends move coins but do not update reward share.</div>
+    <div class="send-note"><strong>Important:</strong> Only transfers made with this official Send keep mining rewards tracked. Normal wallet sends move coins but do not update reward share. DEX/Turbos buys are not auto-registered.</div>
+    <div style="margin-top:14px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+      <strong style="font-size:0.9rem;color:#e5e7eb">Registered holders</strong>
+      <button id="refresh-holders" type="button" style="font-size:0.8rem;padding:6px 10px">Refresh</button>
+    </div>
+    <div id="holders-list" style="margin-top:6px;color:#9aa4b2;font-size:0.86rem">Loading holder registry…</div>
   </section>
 
   <section class="panel" id="dashboard" hidden>
