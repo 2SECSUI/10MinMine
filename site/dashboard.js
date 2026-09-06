@@ -20,6 +20,72 @@ async function loadDashboard(address) {
 window.addEventListener("tenmm-connected", (event) => loadDashboard(event.detail.address));
 let countdownAnchor = null;
 
+const TICK_TOTAL = 600;
+let tickBuilt = false;
+let lastFilled = -1;
+let celebratedForAnchor = null;
+function ensureTickGrid() {
+  const grid = $("tick-grid");
+  if (!grid || tickBuilt) return grid;
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < TICK_TOTAL; i++) {
+    const cell = document.createElement("span");
+    cell.className = "tick";
+    cell.dataset.i = String(i);
+    frag.append(cell);
+  }
+  grid.append(frag);
+  tickBuilt = true;
+  return grid;
+}
+function setTickFill(filled) {
+  const grid = ensureTickGrid();
+  if (!grid) return;
+  const n = Math.max(0, Math.min(TICK_TOTAL, filled | 0));
+  if (n === lastFilled) {
+    const prog = $("tick-progress");
+    if (prog) prog.textContent = `${n} / ${TICK_TOTAL}`;
+    return;
+  }
+  const cells = grid.children;
+  const start = Math.min(lastFilled < 0 ? 0 : lastFilled, n);
+  const end = Math.max(lastFilled < 0 ? 0 : lastFilled, n);
+  for (let i = start; i < end; i++) {
+    if (!cells[i]) continue;
+    cells[i].classList.toggle("on", i < n);
+    cells[i].classList.remove("boom");
+  }
+  // if first paint, sync all
+  if (lastFilled < 0) {
+    for (let i = 0; i < TICK_TOTAL; i++) cells[i]?.classList.toggle("on", i < n);
+  }
+  lastFilled = n;
+  const prog = $("tick-progress");
+  if (prog) prog.textContent = `${n} / ${TICK_TOTAL}`;
+}
+async function celebrateMine() {
+  const card = document.querySelector(".live-countdown-card");
+  if (card) card.classList.add("celebrate");
+  const grid = $("tick-grid");
+  if (grid) {
+    [...grid.children].forEach((c, i) => {
+      if (i % 17 === 0) c.classList.add("boom");
+    });
+    setTimeout(() => [...grid.children].forEach((c) => c.classList.remove("boom")), 900);
+  }
+  try {
+    const mod = await import("https://esm.sh/canvas-confetti@1.9.3");
+    const confetti = mod.default;
+    const canvas = document.getElementById("confetti-canvas");
+    const fire = canvas ? confetti.create(canvas, { resize: true, useWorker: true }) : confetti;
+    fire({ particleCount: 120, spread: 75, origin: { y: 0.3 }, colors: ["#f7931a", "#fb923c", "#fdba74", "#ffffff", "#22c55e"] });
+    setTimeout(() => fire({ particleCount: 70, angle: 60, spread: 55, origin: { x: 0.1, y: 0.4 } }), 180);
+    setTimeout(() => fire({ particleCount: 70, angle: 120, spread: 55, origin: { x: 0.9, y: 0.4 } }), 320);
+  } catch (_) { /* ignore */ }
+  setTimeout(() => card?.classList.remove("celebrate"), 1200);
+}
+
+
 const HALVING_INTERVAL = 210000;
 const BLOCK_SECS = 600;
 const INITIAL_SUBSIDY_10MM = 50;
@@ -115,6 +181,10 @@ async function loadCountdownAnchor() {
   try {
     const status = await json('public/mine-status.json');
     countdownAnchor = parseStatusTs(status);
+    if (countdownAnchor != null && celebratedForAnchor != null && celebratedForAnchor !== countdownAnchor) {
+      celebratedForAnchor = null;
+      lastFilled = -1;
+    }
     const height = Number(status.block_height ?? status.height ?? status.lastBlockHeight ?? 0);
     const lastTs = Number(status.last_block_ts);
     const anchorForHalving = Number.isFinite(lastTs) && lastTs > 0 ? lastTs : countdownAnchor;
@@ -134,10 +204,19 @@ const updateCountdown = () => {
   const next = countdownAnchor || wallClockNextBoundary();
   const left = Math.max(0, next - now);
   el.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+  const filled = Math.min(TICK_TOTAL, Math.max(0, TICK_TOTAL - left));
+  setTickFill(filled);
+  if (left === 0 && celebratedForAnchor !== next) {
+    celebratedForAnchor = next;
+    celebrateMine();
+  }
+  if (left > 0 && celebratedForAnchor === next) {
+    /* keep flag until anchor moves */
+  }
   const sub = $('countdown-sub');
   if (sub) {
-    if (left === 0) sub.textContent = 'Block is mineable now · laptop loop will catch the next owed height';
-    else if (countdownAnchor) sub.textContent = `Next mine in ${Math.floor(left / 60)}m ${left % 60}s · synced to last mined block`;
+    if (left === 0) sub.textContent = 'Block is mineable now · celebration · waiting for next mine';
+    else if (countdownAnchor) sub.textContent = `Next mine in ${Math.floor(left / 60)}m ${left % 60}s · ${filled}/600 seconds filled`;
     else sub.textContent = 'Waiting for mine-status.json · showing wall-clock boundary';
   }
   const mineCopy = $('countdown-mine');

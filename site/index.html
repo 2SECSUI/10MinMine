@@ -248,6 +248,125 @@
       background: #fff7ed; color: #c2410c; font-size: 0.72rem; font-weight: 700;
     }
 
+
+    :root {
+      --bg: #0b0f14;
+      --panel: #121821;
+      --ink: #f3f4f6;
+      --muted: #9aa4b2;
+      --accent: #f7931a;
+      --accent2: #fb923c;
+      --line: #243041;
+      --soft: #182131;
+    }
+    body {
+      background:
+        radial-gradient(900px 420px at 85% -10%, #3a2208 0%, transparent 55%),
+        radial-gradient(700px 380px at 0% 0%, #102038 0%, transparent 50%),
+        var(--bg) !important;
+      color: var(--ink) !important;
+    }
+    header { border-bottom-color: var(--line) !important; }
+    .brand strong { color: #fff; font-size: 1.15rem; }
+    .brand span span { color: var(--muted) !important; }
+    .logo {
+      width: 72px !important; height: 72px !important;
+      border-radius: 18px !important;
+      border: 2px solid var(--accent) !important;
+      box-shadow: 0 0 28px #f7931a55 !important;
+    }
+    .top-nav a { color: #c5ced9 !important; }
+    .top-nav a:hover { color: var(--accent) !important; }
+    .panel, .card, .feature {
+      background: var(--panel) !important;
+      border-color: var(--line) !important;
+      color: var(--ink);
+      box-shadow: 0 16px 40px rgba(0,0,0,.28) !important;
+    }
+    .feature-row { background: var(--line) !important; border-color: var(--line) !important; }
+    .lead, p, .steps, footer { color: var(--muted) !important; }
+    .lead strong, h1, h2, h3 { color: #fff !important; }
+    .dashboard-item, .live-stat, .dapp {
+      background: var(--soft) !important;
+      border-color: var(--line) !important;
+    }
+    .dashboard-item small, .live-stat small { color: #8b96a8 !important; }
+    .dashboard-item strong, .live-stat strong { color: #fff !important; }
+    input {
+      background: #0d131c !important; color: #fff !important; border-color: #334155 !important;
+    }
+    button.secondary { color: #fff !important; border-color: #475569 !important; background: transparent !important; }
+    .secure, .send-note, .swap-disclaimer, .wallet-help {
+      background: #1a140c !important; border-color: #7c3a10 !important; color: #fdba74 !important;
+    }
+    .launch-banner {
+      background: linear-gradient(135deg, #2a1708 0%, #1a140c 55%, #121821 100%) !important;
+      border-color: #9a3412 !important;
+    }
+    .launch-banner strong { color: #fdba74 !important; }
+    .launch-banner p, .launch-banner a { color: #fed7aa !important; }
+    .mint-log-table th, .halving-table th { color: #8b96a8 !important; border-bottom-color: var(--line) !important; }
+    .mint-log-table td, .halving-table td { border-bottom-color: var(--line) !important; color: #e5e7eb; }
+    .live-board {
+      border-color: #7c3a10 !important;
+      background:
+        radial-gradient(900px 280px at 10% -20%, #3b210c 0%, transparent 55%),
+        linear-gradient(180deg, #17120e 0%, #121821 100%) !important;
+      box-shadow: 0 22px 50px rgba(0,0,0,.45) !important;
+    }
+    .halving-panel { border-top-color: #3b2a1a !important; }
+    .halving-panel p { color: #b08968 !important; }
+    .pill { background: #3b210c !important; color: #fdba74 !important; }
+    .hero-actions a { color: #fff !important; border-color: #475569 !important; background: #182131; }
+    .tick-wrap {
+      margin-top: 14px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #0a0d12;
+      border: 1px solid #2a3545;
+    }
+    .tick-label {
+      display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 8px; font-size: 0.72rem; color: #8b96a8; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .tick-label strong { color: #fdba74; font-size: 0.8rem; letter-spacing: 0; text-transform: none; }
+    .tick-grid {
+      display: grid;
+      grid-template-columns: repeat(50, minmax(0, 1fr));
+      gap: 2px;
+      width: 100%;
+    }
+    .tick {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      background: #1a2330;
+      box-shadow: inset 0 0 0 1px #243041;
+      transition: background .15s ease, box-shadow .15s ease, transform .15s ease;
+    }
+    .tick.on {
+      background: linear-gradient(180deg, #fb923c, #f7931a);
+      box-shadow: 0 0 6px #f7931a88;
+    }
+    .tick.boom {
+      background: #fff7ed;
+      box-shadow: 0 0 10px #fff;
+      transform: scale(1.15);
+    }
+    .live-countdown-card.celebrate {
+      animation: minePulse 1.1s ease;
+    }
+    @keyframes minePulse {
+      0% { box-shadow: 0 0 0 0 #f7931a00; }
+      35% { box-shadow: 0 0 0 8px #f7931a55; }
+      100% { box-shadow: 0 0 0 0 #f7931a00; }
+    }
+    #send-status { min-height: 1.2em; margin-top: 10px; color: var(--accent2); font-size: 0.86rem; }
+    @media (max-width: 720px) {
+      .logo { width: 56px !important; height: 56px !important; }
+      .tick-grid { gap: 1px; }
+    }
+
   </style>
 </head>
 <body>
@@ -278,6 +397,11 @@
         <h2>Next 10MM block</h2>
         <div class="live-countdown-value" id="countdown">Loading…</div>
         <div class="live-countdown-sub" id="countdown-sub">Synced to last mined block · ~10 minute cadence</div>
+
+        <div class="tick-wrap" aria-label="Seconds until next mine">
+          <div class="tick-label"><span>Block progress · 600 seconds</span><strong id="tick-progress">0 / 600</strong></div>
+          <div class="tick-grid" id="tick-grid"></div>
+        </div>
       </div>
       <div class="live-stat-grid">
         <div class="live-stat"><small>Height</small><strong id="mine-height">—</strong></div>
@@ -359,6 +483,7 @@
       <input id="sendAmount" type="text" inputmode="decimal" placeholder="Amount (10MM)" aria-label="Amount in 10MM" />
       <button data-action="transfer" type="button" disabled>Send 10MM</button>
     </div>
+    <div id="send-status" role="status"></div>
     <div class="send-note"><strong>Important:</strong> Only transfers made with this official Send keep mining rewards tracked. Normal wallet sends move coins but do not update reward share.</div>
   </section>
 
@@ -428,5 +553,5 @@
 </main>
 <link rel="stylesheet" href="https://archive.cetus.zone/assets/terminal/style-v2.css" />
 <script src="https://archive.cetus.zone/assets/terminal/main-v2.js"></script>
-<script type="module" src="app.js?v=slush3-cetus"></script>
-<script type="module" src="dashboard.js"></script>
+<script type="module" src="app.js?v=xfer-tick1"></script>
+<script type="module" src="dashboard.js?v=tick1"></script>

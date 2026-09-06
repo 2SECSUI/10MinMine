@@ -30,7 +30,12 @@
   const cetusSellUrl = CONFIG.cetusSellUrl || CONFIG.poolUrl || '';
 
   const chain = `sui:${CONFIG.network}`;
-  const setStatus = (text) => { statusEl.textContent = text; };
+  const setStatus = (text) => { if (statusEl) statusEl.textContent = text; };
+  const setSendStatus = (text) => {
+    const el = document.getElementById('send-status');
+    if (el) el.textContent = text;
+    if (statusEl) statusEl.textContent = text;
+  };
   // Initialize the embedded terminal with the live SUI/10MM pair. The fallback
   // links stay available if a browser blocks the CDN or the terminal cannot lock tokens.
   const buyLink = document.getElementById('cetus-buy-link');
@@ -152,16 +157,22 @@
   };
 
   async function splitTenmmPayment(tx, amount) {
-    const coins = await client.getCoins({ owner: account.address, coinType: CONFIG.packageId + "::tenmm::TENMM" });
+    const coinType = CONFIG.coinType || (CONFIG.packageId + "::tenmm::TENMM");
+    const coins = await client.getCoins({ owner: account.address, coinType });
     const spendable = (coins.data || []).filter((coin) => BigInt(coin.balance) > 0n);
     if (!spendable.length) throw new Error("No 10MM coin found in this wallet.");
     const direct = spendable.find((coin) => BigInt(coin.balance) >= amount);
-    if (direct) return tx.splitCoins(tx.object(direct.coinObjectId), [amount]);
-    const total = spendable.reduce((sum, coin) => sum + BigInt(coin.balance), 0n);
-    if (total < amount) throw new Error("Insufficient 10MM balance.");
-    const [primary, ...others] = spendable;
-    if (others.length) tx.mergeCoins(tx.object(primary.coinObjectId), others.map((coin) => tx.object(coin.coinObjectId)));
-    return tx.splitCoins(tx.object(primary.coinObjectId), [amount]);
+    let parts;
+    if (direct) {
+      parts = tx.splitCoins(tx.object(direct.coinObjectId), [amount]);
+    } else {
+      const total = spendable.reduce((sum, coin) => sum + BigInt(coin.balance), 0n);
+      if (total < amount) throw new Error("Insufficient 10MM balance.");
+      const [primary, ...others] = spendable;
+      if (others.length) tx.mergeCoins(tx.object(primary.coinObjectId), others.map((coin) => tx.object(coin.coinObjectId)));
+      parts = tx.splitCoins(tx.object(primary.coinObjectId), [amount]);
+    }
+    return Array.isArray(parts) ? parts[0] : parts;
   }
 
   async function call(action) {
@@ -186,9 +197,10 @@
         });
       } else if (action === "transfer") {
         const recipient = document.getElementById("sendRecipient").value.trim();
-        if (!isHexId(recipient)) return setStatus("Enter a valid recipient Sui address.");
+        if (!isHexId(recipient)) return setSendStatus("Enter a valid recipient Sui address.");
         const amount = decimalToBaseUnits(document.getElementById("sendAmount").value, 8, "10MM");
-        if (amount <= 0n) return setStatus("Enter a 10MM amount greater than zero.");
+        if (amount <= 0n) return setSendStatus("Enter a 10MM amount greater than zero.");
+        setSendStatus("Building protocol transfer…");
         const payment = await splitTenmmPayment(tx, amount);
         tx.moveCall({
           target,
@@ -202,20 +214,45 @@
         });
       }
 
-      setStatus('Approve in your wallet popup if the network and contract look correct…');
-      const result = await wallet.features['sui:signAndExecuteTransaction'].signAndExecuteTransaction({
-        transaction: tx,
-        account,
-        chain,
-      });
-      setStatus(`Submitted on ${CONFIG.network}. Digest: ${result.digest || 'see wallet activity'}`);
+      const statusFn = action === "transfer" ? setSendStatus : setStatus;
+      statusFn("Approve in your Slush popup…");
+      let result;
+      if (wallet.features["sui:signAndExecuteTransaction"]?.signAndExecuteTransaction) {
+        result = await wallet.features["sui:signAndExecuteTransaction"].signAndExecuteTransaction({
+          transaction: tx,
+          account,
+          chain,
+        });
+      } else if (wallet.features["sui:signAndExecuteTransactionBlock"]?.signAndExecuteTransactionBlock) {
+        result = await wallet.features["sui:signAndExecuteTransactionBlock"].signAndExecuteTransactionBlock({
+          transactionBlock: tx,
+          account,
+          chain,
+        });
+      } else {
+        throw new Error("Slush cannot sign Sui transactions.");
+      }
+      statusFn(`Submitted on ${CONFIG.network}. Digest: ${result.digest || "see wallet activity"}`);
+      if (action === "transfer" && account?.address) {
+        window.dispatchEvent(new CustomEvent("tenmm-connected", { detail: { address: account.address } }));
+      }
     } catch (e) {
-      setStatus(e.message || String(e));
+      const msg = e?.message || String(e);
+      if (action === "transfer") setSendStatus(msg);
+      else setStatus(msg);
     }
   }
 
   document.querySelectorAll('[data-action]').forEach((b) => {
-    b.onclick = () => call(b.dataset.action);
+    b.onclick = (ev) => {
+      ev.preventDefault();
+      if (b.disabled) {
+        if (b.dataset.action === 'transfer') setSendStatus('Connect Slush first, then try Send again.');
+        else setStatus('Connect Slush first.');
+        return;
+      }
+      call(b.dataset.action);
+    };
   });
 
   const client = new SuiClient({ url: getFullnodeUrl(CONFIG.network) });
