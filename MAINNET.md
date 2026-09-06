@@ -20,3 +20,10 @@
 - New 10MM only from `mine` (+ genesis lock)
 - Buy/sell against seeded Market of already-mined coins (no mint-on-buy)
 - Use `protocol_transfer` so holder registry / rewards follow
+
+## Market LP (seeded)
+- **Market:** `0x477a9f51937a7c07cdb84512c91d5c70e1951902fe08759f6b4bc4505f497c33`
+- Reserves: **25 10MM + 0.27 SUI** (~0.0108 SUI per 10MM ≈ **~$0.008** at ~$0.78/SUI)
+- Seed digest: `G912V4DAXz3pimwxfZHjJmJNLjVQB3n9v4Vx1h4JgX1d`
+- Site buy/sell uses this Market (already-mined coins only)
+- Cetus pool: deferred until more liquid SUI is available in the ops wallet (most SUI appears non-gas / LP-locked)
