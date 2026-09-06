@@ -1,1 +1,3 @@
 laptop/secrets/x-api.env
+node_modules/
+laptop/aftermath_topup_*.json

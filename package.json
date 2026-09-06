@@ -1,0 +1,12 @@
+{
+  "name": "10minmine-ops-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "aftermath:topup": "node laptop/aftermath_topup.mjs"
+  },
+  "dependencies": {
+    "@mysten/sui": "^2.29.0",
+    "aftermath-ts-sdk": "^5.0.1"
+  }
+}
