@@ -6,4 +6,4 @@ edition = "2024.beta"
 ten_min_mine = "0x0"
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/mainnet" }
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "6f6f095c246733e7b155abebb63a4e64d64e17b9" }
