@@ -13,6 +13,8 @@ export const CONFIG = {
   poolId: '0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
   positionId: '0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be',
   poolUrl: 'https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be',
+  aftermathFarmId: '0x89a692f70e2b831d1d6a1ec299f571ba2032c94df4fe8ed8dde2ef9b711df035',
+  aftermathFarmUrl: 'https://aftermath.finance/farms/0x89a692f70e2b831d1d6a1ec299f571ba2032c94df4fe8ed8dde2ef9b711df035',
   turbosPoolId: '0xaaf7498f5604f4e97f2350051caeb718a0963cd103b647d38435be1c22c886fc',
   turbosPoolUrl: 'https://app.turbos.finance/#/trade?input=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&output=0x2%3A%3Asui%3A%3ASUI',
   cetusBuyUrl: 'https://app.cetus.zone/swap?from=0x2%3A%3Asui%3A%3ASUI&to=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
@@ -26,6 +28,7 @@ export const CONFIG = {
   },
   dapps: [
     { name: 'Cetus', url: 'https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be', note: 'Live 10MM/SUI pool' },
+    { name: 'Aftermath', url: 'https://aftermath.finance/farms/0x89a692f70e2b831d1d6a1ec299f571ba2032c94df4fe8ed8dde2ef9b711df035', note: 'Stake 10MM to earn mine-funded farm rewards' },
     { name: 'Scallop', url: '' },
     { name: 'Suilend', url: '' }, { name: 'Bluefin', url: '' },
     { name: 'Navi', url: '' }, { name: 'DeepTrade', url: '' },
