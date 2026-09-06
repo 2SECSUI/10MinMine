@@ -1,0 +1,11 @@
+{
+  "network": "mainnet",
+  "packageId": "0x06fe3c16c81994fc0c555f9288b2a9bc2265be45cc5a9a1107bdbc7f405b0f8a",
+  "block_height": 1,
+  "total_minted": "10000000000",
+  "total_minted_10mm": 100.0,
+  "last_block_ts": 1788709635,
+  "updated_at": "2026-09-06T16:47:35.520044+01:00",
+  "last_digest": "DuB2ESmcgPJyxdTQZvrWouB75V3w3rddGoG3qfbNw4N9",
+  "iconUrl": "https://raw.githubusercontent.com/2SECSUI/10MinMine/main/site/public/10mmLogo.png"
+}
