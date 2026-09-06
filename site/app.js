@@ -200,3 +200,38 @@
 
   // Buy/Sell open Cetus without a prior site wallet connect.
   setActionsEnabled(Boolean(cetusBuyUrl || cetusSellUrl));
+
+  // Launch confetti (once per session)
+  async function celebrateLaunch() {
+    try {
+      if (sessionStorage.getItem('tenmm-launch-confetti')) return;
+      const mod = await import('https://esm.sh/canvas-confetti@1.9.3');
+      const confetti = mod.default;
+      const canvas = document.getElementById('confetti-canvas');
+      if (canvas) confetti.create(canvas, { resize: true, useWorker: true })({
+        particleCount: 160,
+        spread: 70,
+        origin: { y: 0.25 },
+        colors: ['#ea580c', '#fb923c', '#fdba74', '#ffffff', '#111111'],
+      });
+      else confetti({ particleCount: 160, spread: 70, origin: { y: 0.25 }, colors: ['#ea580c', '#fb923c', '#fdba74', '#ffffff', '#111111'] });
+      setTimeout(() => confetti({ particleCount: 80, angle: 60, spread: 55, origin: { x: 0 } }), 250);
+      setTimeout(() => confetti({ particleCount: 80, angle: 120, spread: 55, origin: { x: 1 } }), 400);
+      sessionStorage.setItem('tenmm-launch-confetti', '1');
+    } catch (_) { /* ignore */ }
+  }
+  celebrateLaunch();
+
+  // Fill contract panel from CONFIG when present
+  (() => {
+    const setText = (id, text) => { const el = document.getElementById(id); if (el && text) el.textContent = text; };
+    setText('contract-network', CONFIG.network);
+    setText('contract-package', CONFIG.packageId);
+    setText('contract-cointype', CONFIG.coinType || (CONFIG.packageId ? `${CONFIG.packageId}::tenmm::TENMM` : ''));
+    const ex = document.getElementById('contract-explorer');
+    const pkgLink = document.getElementById('launch-package-link');
+    const href = CONFIG.explorer?.package || (CONFIG.packageId ? `https://suiscan.xyz/${CONFIG.network}/object/${CONFIG.packageId}` : '');
+    if (ex && href) { ex.href = href; }
+    if (pkgLink && href) { pkgLink.href = href; }
+  })();
+
