@@ -49,3 +49,19 @@ Override any via env vars (`PACKAGE_ID`, `GAS_BUDGET`, `INTERVAL`, …).
 - Protocol block time is still **~10 minutes** on-chain; the loop is **12 minutes** so you don’t spam empty calls.
 - Site mint-log + X batch posts are separate (every 20 heights) — these scripts only mine.
 - Anyone can call `mine`; rewards go to registered holders. The caller tip is **0.01 SUI** from the fee pot when funded.
+
+
+## Windows (PowerShell)
+
+```powershell
+cd $HOME
+git clone https://github.com/2SECSUI/10MinMine.git
+cd 10MinMine\laptop
+
+sui client switch --env mainnet
+.\mine_if_owed.ps1
+# or:
+.\mine_loop_12m.ps1
+```
+
+If scripts are blocked: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
