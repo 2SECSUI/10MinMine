@@ -1,3 +1,7 @@
+> **Superseded:** this testnet deployment predates v2 direct mine payouts. It is not the v2 package; publish a fresh package before testing.
+
+Package design version: **v2.0.0**.
+
 # 10MinMine testnet (final)
 
 - Package: `0x0f93a301c1dbc9b739e6e247fe9a55714c3bfe16d8b68a75571899e99dca7ec0`
