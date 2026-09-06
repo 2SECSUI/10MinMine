@@ -163,7 +163,7 @@
   <header>
     <a class="brand" href="index.html" aria-label="10MinMine home">
       <img class="logo" src="public/10mmLogo.png" alt="10MM logo" width="42" height="42" />
-      <span><strong>10MinMine</strong><span>Ticker 10MM · Sui mainnet</span></span>
+      <span><strong>10MinMine</strong><span>Ticker 10MM · Sui testnet (v2 pending fresh publish)</span></span>
     </a>
     <nav class="top-nav" aria-label="Primary">
       <a href="#dashboard">Dashboard</a><a href="#mine">Mine</a><a href="#get-10mm">Get 10MM</a><a href="#send">Send</a><a href="#terms">Terms</a><a href="10mmscan/">10mmscan</a>
@@ -195,15 +195,14 @@
 
   <section class="panel buy-panel" id="get-10mm">
     <div class="eyebrow">GET 10MM</div><h2>Buy, sell, or claim</h2>
-    <p>Use your connected Sui wallet for token actions. Review every transaction before approving it.</p>
+    <p><strong>Buy</strong> and <strong>Sell</strong> open the Cetus dapp for the live 10MM/SUI pool. <strong>Claim</strong> still uses this site with your connected wallet.</p>
     <div class="actions">
-      <input id="buyAmount" type="text" inputmode="decimal" placeholder="Buy amount (SUI)" aria-label="Buy amount in SUI" />
-      <button data-action="buy" type="button" disabled>Buy 10MM</button>
-      <button data-action="sell" class="secondary" type="button" disabled>Sell 10MM</button>
+      <button data-action="buy" type="button">Buy 10MM on Cetus</button>
+      <button data-action="sell" class="secondary" type="button">Sell 10MM on Cetus</button>
       <button data-action="claim" class="secondary" type="button" disabled>Claim rewards</button>
     </div>
-    <div id="feePreview" class="fee-preview">Estimated 0.3% fee: —</div>
-    <div id="status" class="status">Connect a wallet to enable actions.</div>
+    <div id="feePreview" class="fee-preview">Swaps use Cetus pool fees — review price impact on Cetus before confirming.</div>
+    <div id="status" class="status">Buy/Sell open Cetus. Connect a wallet here for claim and Send.</div>
   </section>
 
   <section class="panel" id="send">
@@ -253,7 +252,7 @@
   </section>
 
   <section class="grid">
-    <article class="card"><h2>How rewards work</h2><ol class="steps"><li><strong>Buy or receive 10MM</strong> into your wallet.</li><li>Every ~10 minutes a <strong>mine</strong> call advances the schedule.</li><li>Your share is based on <strong>how much you hold</strong>.</li><li>Rewards are <strong>pushed</strong> when possible, or you <strong>claim</strong> here.</li></ol></article>
+    <article class="card"><h2>How rewards work</h2><ol class="steps"><li><strong>Buy or receive 10MM</strong> into your wallet.</li><li>Every ~10 minutes a <strong>mine</strong> call advances the schedule.</li><li>Your share is based on <strong>how much you hold</strong> and hold age.</li><li>Rewards are <strong>paid directly during mine</strong>; <strong>claim</strong> remains a fallback for dust or legacy balances.</li></ol></article>
     <article class="card"><h2>Supply rules</h2><p>Hard cap 21M. Genesis 50 is permanently locked. No extra minting beyond the block schedule. After the long emission era, new 10MM stops; trading and fee-based tips can continue.</p></article>
     <article class="card"><h2>Built for Sui</h2><p>10MinMine uses Sui wallet standards and public network data. Check live balances and token activity with 10mmscan.</p></article>
   </section>
@@ -261,11 +260,11 @@
   <section class="panel" id="defi"><div class="eyebrow">COMPOSABILITY</div><h2>DeFi apps</h2><p>Integrations are listed as they become available. Empty links are launch placeholders.</p><div id="dapps" class="dashboard-grid"></div></section>
   <section class="panel" id="terms">
     <div class="eyebrow">TERMS</div><h2>Use and liquidity notes</h2>
-    <p>Use the official Send flow for transfers you want included in mining reward tracking. Normal wallet sends move 10MM but do not update reward share. Liquidity is currently thin, so large trades may move the price significantly; maximum-buy limits and available liquidity can change.</p>
+    <p>Use the official Send flow for transfers you want included in mining reward tracking. Normal wallet sends move 10MM but do not update reward share. Primary liquidity is on Cetus. The pool can still be thin — check price impact on Cetus before swapping. Prefer official Send on this site if you want reward tracking to follow transfers.</p>
   </section>
   
   <section class="panel" id="contract">
-    <div class="eyebrow">MAINNET</div><h2>Contract details</h2>
+    <div class="eyebrow">PACKAGE V2.0.0</div><h2>Contract details</h2><p class="notice">The previous mainnet package is abandoned. This v2 design pays holders during <code>mine</code> and needs a fresh publish; legacy IDs are disabled below.</p>
     <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin:12px 0 16px">
       <img src="public/10mmLogo.png" alt="10MM logo" width="72" height="72" style="border-radius:14px;border:1px solid #e5e5e5" />
       <div>
@@ -274,12 +273,11 @@
       </div>
     </div>
     <div class="dashboard-grid">
-      <div class="dashboard-item"><small>Network</small><strong>mainnet</strong></div>
-      <div class="dashboard-item"><small>Package</small><strong style="font-size:0.72rem">0x06fe3c16c81994fc0c555f9288b2a9bc2265be45cc5a9a1107bdbc7f405b0f8a</strong></div>
-      <div class="dashboard-item"><small>Coin type</small><strong style="font-size:0.68rem">0x06fe…0f8a::tenmm::TENMM</strong></div>
-      <div class="dashboard-item"><small>Suiscan</small><strong><a href="https://suiscan.xyz/mainnet/coin/0x06fe3c16c81994fc0c555f9288b2a9bc2265be45cc5a9a1107bdbc7f405b0f8a::tenmm::TENMM" target="_blank" rel="noopener">Coin page</a> · <a href="https://suiscan.xyz/mainnet/object/0x06fe3c16c81994fc0c555f9288b2a9bc2265be45cc5a9a1107bdbc7f405b0f8a" target="_blank" rel="noopener">Package</a></strong></div>
+      <div class="dashboard-item"><small>Network</small><strong>testnet (pending fresh publish)</strong></div>
+      <div class="dashboard-item"><small>Package</small><strong>Pending fresh publish</strong></div>
+      <div class="dashboard-item"><small>Coin type</small><strong>Pending fresh publish</strong></div>
+      <div class="dashboard-item"><small>Explorer</small><strong>Legacy links intentionally removed</strong></div>
     </div>
-    <p style="margin-top:12px;font-size:0.85rem;color:#5c5c5c">Import in Slush (mainnet): <code>0x06fe3c16c81994fc0c555f9288b2a9bc2265be45cc5a9a1107bdbc7f405b0f8a::tenmm::TENMM</code></p>
   </section>
 
   <footer>Official 10MinMine UI · claim / buy / sell / send · package IDs are configured per network · always verify you are on the official site before connecting.</footer>
