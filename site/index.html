@@ -156,6 +156,14 @@
     footer { color: var(--muted); }
     @media (max-width: 860px) { header { grid-template-columns: 1fr auto; } }
     @media (max-width: 620px) { .feature-row { grid-template-columns: 1fr; } .hero { padding-top: 54px; } .hero-actions button, .hero-actions a { width: 100%; justify-content: center; } }
+  
+    .launch-banner { position: relative; overflow: hidden; margin: 0 0 18px; padding: 14px 18px; border-radius: 14px; background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 45%, #fff 100%); border: 1px solid #fdba74; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
+    .launch-banner strong { color: #c2410c; font-size: 1.05rem; }
+    .launch-banner p { margin: 0; color: #9a3412; font-size: 0.92rem; }
+    .launch-banner a { font-weight: 700; color: #ea580c; text-decoration: none; }
+    .launch-banner a:hover { text-decoration: underline; }
+    #confetti-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
+
   </style>
 </head>
 <body>
@@ -163,7 +171,7 @@
   <header>
     <a class="brand" href="index.html" aria-label="10MinMine home">
       <img class="logo" src="public/10mmLogo.png" alt="10MM logo" width="42" height="42" />
-      <span><strong>10MinMine</strong><span>Ticker 10MM · Sui testnet (v2 pending fresh publish)</span></span>
+      <span><strong>10MinMine</strong><span>Ticker 10MM · Sui mainnet</span></span>
     </a>
     <nav class="top-nav" aria-label="Primary">
       <a href="#dashboard">Dashboard</a><a href="#mine">Mine</a><a href="#get-10mm">Get 10MM</a><a href="#send">Send</a><a href="#terms">Terms</a><a href="10mmscan/">10mmscan</a>
@@ -239,8 +247,8 @@
       <div class="mint-log-heading"><h3 id="mint-log-title">Mint log</h3><span id="mint-log-status">Loading recent blocks…</span></div>
       <div class="mint-log-wrap">
         <table class="mint-log-table">
-          <thead><tr><th scope="col">Height</th><th scope="col">Time</th><th scope="col">Digest</th><th scope="col">Event</th></tr></thead>
-          <tbody id="mint-log-body"><tr><td colspan="4">Loading recent blocks…</td></tr></tbody>
+          <thead><tr><th scope="col">Height</th><th scope="col">Time</th><th scope="col">Digest</th><th scope="col">Rewarded</th><th scope="col">Event</th></tr></thead>
+          <tbody id="mint-log-body"><tr><td colspan="5">Loading recent blocks…</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -264,19 +272,19 @@
   </section>
   
   <section class="panel" id="contract">
-    <div class="eyebrow">PACKAGE V2.0.0</div><h2>Contract details</h2><p class="notice">The previous mainnet package is abandoned. This v2 design pays holders during <code>mine</code> and needs a fresh publish; legacy IDs are disabled below.</p>
+    <div class="eyebrow">PACKAGE V2.0.0</div><h2>Contract details</h2><p class="notice">Live on <strong>Sui mainnet</strong>. Immutable package — holders are paid during <code>mine</code>.</p>
     <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin:12px 0 16px">
       <img src="public/10mmLogo.png" alt="10MM logo" width="72" height="72" style="border-radius:14px;border:1px solid #e5e5e5" />
       <div>
         <p style="margin:0 0 8px"><strong>10MinMine</strong> · ticker <strong>10MM</strong> · 8 decimals · 21,000,000 hard cap</p>
-        <p style="margin:0;color:#5c5c5c">Immutable package. Bitcoin-style ~10-minute blocks. Logo is set in on-chain CoinMetadata.</p>
+        <p style="margin:0;color:#5c5c5c">Launched 6 Sep 2026, 17:44 IST. Bitcoin-style ~10-minute blocks. Logo is set in on-chain CoinMetadata.</p>
       </div>
     </div>
     <div class="dashboard-grid">
-      <div class="dashboard-item"><small>Network</small><strong>testnet (pending fresh publish)</strong></div>
-      <div class="dashboard-item"><small>Package</small><strong>Pending fresh publish</strong></div>
-      <div class="dashboard-item"><small>Coin type</small><strong>Pending fresh publish</strong></div>
-      <div class="dashboard-item"><small>Explorer</small><strong>Legacy links intentionally removed</strong></div>
+      <div class="dashboard-item"><small>Network</small><strong id="contract-network">mainnet</strong></div>
+      <div class="dashboard-item"><small>Package</small><strong id="contract-package" class="mono">0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98</strong></div>
+      <div class="dashboard-item"><small>Coin type</small><strong id="contract-cointype" class="mono">…::tenmm::TENMM</strong></div>
+      <div class="dashboard-item"><small>Explorer</small><strong><a id="contract-explorer" href="https://suiscan.xyz/mainnet/object/0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98" target="_blank" rel="noopener noreferrer">Open on Suiscan →</a></strong></div>
     </div>
   </section>
 
