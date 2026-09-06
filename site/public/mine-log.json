@@ -5,5 +5,13 @@
     "minted_raw": "10000000000",
     "event": "mainnet_mine",
     "digest": "DuB2ESmcgPJyxdTQZvrWouB75V3w3rddGoG3qfbNw4N9"
+  },
+  {
+    "ts": "2026-09-06T17:16:58.921303+01:00",
+    "height": 3,
+    "minted_raw": "10000000000",
+    "blocks": 2,
+    "event": "mainnet_mine",
+    "digest": "8BDu9QTWcr5qsBgx4VVWT7RHb4CozGBpwpiSHGU7Chiz"
   }
 ]
