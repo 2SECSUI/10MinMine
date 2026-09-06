@@ -162,12 +162,14 @@ module ten_min_mine::tenmm {
                 {
                     let holder = table::borrow_mut(&mut registry.holders, sender);
                     holder.principal = holder.principal + emission;
+                    holder.last_settled_block = new_height;
                 };
                 registry.total_principal = registry.total_principal + emission;
                 let payout = coin::mint(&mut pool.cap, emission, ctx);
                 transfer::public_transfer(payout, sender);
             } else {
                 balance::join(&mut pool.rewards, coin::into_balance(coin::mint(&mut pool.cap, emission, ctx)));
+                distribute_mined_rewards(registry, pool, old_height, new_height, now, ctx);
             }
         };
 
@@ -228,12 +230,25 @@ module ten_min_mine::tenmm {
     /// Seed the constant-product market with already-mined TENMM and SUI.
     public entry fun seed_liquidity(
         market: &mut Market,
+        pool: &RewardPool,
+        registry: &mut HolderRegistry,
         sui_coin: Coin<SUI>,
         tenmm_coin: Coin<TENMM>,
-        _ctx: &mut TxContext,
+        clock: &Clock,
+        ctx: &mut TxContext,
     ) {
         assert!(coin::value(&sui_coin) > 0, E_BAD_AMOUNT);
-        assert!(coin::value(&tenmm_coin) > 0, E_BAD_AMOUNT);
+        let seeded = coin::value(&tenmm_coin);
+        assert!(seeded > 0, E_BAD_AMOUNT);
+        let sender = tx_context::sender(ctx);
+        assert!(table::contains(&registry.holders, sender), E_NOT_HOLDER);
+        settle(registry, pool, sender, clock::timestamp_ms(clock) / 1000);
+        {
+            let holder = table::borrow_mut(&mut registry.holders, sender);
+            assert!(seeded <= holder.principal, E_BAD_AMOUNT);
+            holder.principal = holder.principal - seeded;
+        };
+        registry.total_principal = registry.total_principal - seeded;
         balance::join(&mut market.sui, coin::into_balance(sui_coin));
         balance::join(&mut market.tenmm, coin::into_balance(tenmm_coin));
     }
@@ -360,6 +375,36 @@ module ten_min_mine::tenmm {
         holder.last_settled_block = pool.block_height;
     }
 
+    /// Pay the share for exactly the newly mined height range. Principal is
+    /// deliberately unchanged: rewards are circulating coins, not new stake.
+    fun distribute_mined_rewards(
+        registry: &mut HolderRegistry,
+        pool: &mut RewardPool,
+        from_block: u64,
+        to_block: u64,
+        now: u64,
+        ctx: &mut TxContext,
+    ) {
+        let total = registry.total_principal;
+        let mut i = 0;
+        let n = vector::length(&registry.addresses);
+        while (i < n) {
+            let recipient = *vector::borrow(&registry.addresses, i);
+            let amount = {
+                let holder = table::borrow_mut(&mut registry.holders, recipient);
+                let reward = reward_quote(holder.principal, total, from_block, to_block, holder.joined_ts, now);
+                holder.last_settled_block = to_block;
+                reward
+            };
+            if (amount > 0) {
+                assert!(amount <= balance::value(&pool.rewards), E_INSUFFICIENT_LIQUIDITY);
+                let payout = coin::from_balance(balance::split(&mut pool.rewards, amount), ctx);
+                transfer::public_transfer(payout, recipient);
+            };
+            i = i + 1;
+        };
+    }
+
     /// Quote rewards using the holder's current age band. Slots are absolute
     /// block heights, making the stagger deterministic across push/claim calls.
     public fun reward_quote(principal: u64, total_principal: u64, from_block: u64, to_block: u64, joined_ts: u64, now_ts: u64): u64 {
@@ -368,7 +413,7 @@ module ten_min_mine::tenmm {
         let years = age / YEAR_SECS;
         let interval = if (years >= 10) { 11 } else { years + 1 };
         let emission = emission_between_slots(from_block, to_block, interval);
-        emission * principal / total_principal
+        ((emission as u128) * (principal as u128) / (total_principal as u128)) as u64
     }
 
 
