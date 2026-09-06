@@ -1,0 +1,3 @@
+# One Sui address per line (optional amount after comma, default REGISTER_10MM).
+# Wallets with v2 10MM that are not in the holder registry get an official protocol_transfer from ops.
+0x88026b1331bcea8a45a3fc6dd538dd18829daf2829d55ba24aca683579124492,10
