@@ -7,78 +7,51 @@ const fmt = (raw, decimals) => { try { const n = BigInt(raw || 0); const base = 
 const isHexId = (v) => typeof v === "string" && /^0x[0-9a-fA-F]+$/.test(v);
 const coinType = () => CONFIG.coinType || (CONFIG.packageId ? `${CONFIG.packageId}::tenmm::TENMM` : "");
 const byId = (id) => document.getElementById(id);
-const registryFallbacks = CONFIG.stats?.holderRegistryFallbacks || { principal: "Registry lookup unavailable", pendingFee: "Paid during mine - lookup unavailable" };
-const registryValue = (value) => value !== undefined && value !== null && value !== "";
-const formatRegistryAmount = (value) => registryValue(value) ? String(fmt(value, 8)) + " 10MM" : null;
-const holderFields = (node) => {
-  let current = node;
-  for (let i = 0; i < 5 && current; i += 1) {
-    if (current.fields && typeof current.fields === "object") {
-      const fields = current.fields;
-      if (registryValue(fields.principal) || registryValue(fields.owed) || registryValue(fields.pending_rewards)) return fields;
-      if (fields.value) { current = fields.value; continue; }
-      current = fields; continue;
-    }
-    if (current.value) { current = current.value; continue; }
-    break;
-  }
-  return current && typeof current === "object" ? current : {};
-};
-async function loadHolderRegistry(address) {
-  const addressEl = byId("holder-registry-address");
-  const principalEl = byId("holder-principal");
-  const pendingEl = byId("holder-pending-fee");
-  const stateEl = byId("holder-registry-state");
-  const noteEl = byId("holder-registry-note");
-  if (addressEl) addressEl.textContent = address;
-  if (principalEl) principalEl.textContent = registryFallbacks.principal;
-  if (pendingEl) pendingEl.textContent = registryFallbacks.pendingFee;
-  if (stateEl) stateEl.textContent = "Reading registry...";
-  try {
-    const obj = await client.getObject({ id: CONFIG.holderRegistryId, options: { showContent: true } });
-    const fields = obj.data?.content?.fields || {};
-    let holder = holderFields(fields);
-    const table = fields.holders;
-    const tableId = table?.fields?.id?.id || table?.fields?.id || table?.id?.id || table?.id;
-    if (tableId && typeof client.getDynamicFieldObject === "function") {
-      try {
-        const entry = await client.getDynamicFieldObject({ parentId: tableId, name: { type: "address", value: address } });
-        holder = holderFields(entry?.data?.content?.fields || entry?.data?.value || entry?.data);
-      } catch (_) { /* table lookup may be unavailable on public RPC */ }
-    }
-    const principal = holder.principal ?? holder.tracked_principal;
-    const pending = holder.owed ?? holder.pending_fee ?? holder.pending_rewards;
-    if (registryValue(principal) && principalEl) principalEl.textContent = formatRegistryAmount(principal);
-    if (registryValue(pending) && pendingEl) pendingEl.textContent = formatRegistryAmount(pending);
-    const direct = registryValue(principal) || registryValue(pending);
-    if (stateEl) stateEl.textContent = direct ? "Registry data readable" : "Connected - holder table not directly readable";
-    if (noteEl) noteEl.innerHTML = "Connected address: <code>" + address + "</code>. Rewards pay during mine. " + (direct ? "Use " : "The public registry exposes a table rather than a direct wallet row. Use ") + "<a href='#send'>Send</a> for tracked transfers.";
-  } catch (_) {
-    if (stateEl) stateEl.textContent = "RPC unavailable - fallback shown";
-    if (noteEl) noteEl.innerHTML = "Connected address: <code>" + address + "</code>. Rewards pay during mine. Registry lookup failed, so the configured placeholders are shown. Use <a href='#send'>Send</a> for tracked transfers.";
-  }
-}
 async function loadPoolSnapshot() {
   const set = (id, value) => { const el = byId(id); if (el) el.textContent = value; };
-  const money = (value) => { const n = Number(value); return Number.isFinite(n) ? "\u0024" + n.toLocaleString(undefined, { maximumFractionDigits: 6 }) : "-"; };
-  const sui = (value) => { const n = Number(value); return Number.isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: 8 }) + " SUI" : "-"; };
+  const money = (value) => { const n = Number(value); return Number.isFinite(n) ? "\u0024" + n.toLocaleString(undefined, { maximumFractionDigits: 6 }) : "—"; };
+  const sui = (value) => { const n = Number(value); return Number.isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: 8 }) + " SUI" : "—"; };
+  let pool;
   try {
-    const pool = await json("public/mine-pool.json");
-    const priceSui = sui(pool.priceNative);
-    const priceUsd = money(pool.priceUsd);
-    const tvl = money(pool.liquidityUsd);
-    const volume = money(pool.volume24hUsd);
-    set("pool-price-sui", priceSui); set("pool-price-usd", priceUsd); set("pool-tvl", tvl); set("pool-volume", volume);
-    set("board-pool-price", priceSui + " / " + priceUsd); set("board-pool-tvl", tvl); set("board-pool-volume", volume);
-    const dexUrl = pool.url || "https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2";
-    const links = { "pool-swap-link": CONFIG.cetusBuyUrl, "pool-lp-link": CONFIG.poolUrl, "pool-dex-link": dexUrl, "board-pool-link": dexUrl };
-    Object.entries(links).forEach(([id, href]) => { const el = byId(id); if (el && href) el.href = href; });
-    const when = pool.fetchedAt ? new Date(pool.fetchedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "current snapshot";
-    set("pool-source-status", "DexScreener - " + when);
-  } catch (_) {
-    set("pool-source-status", "DexScreener snapshot unavailable");
-    set("pool-note", "The cached DexScreener snapshot is unavailable right now; use the Cetus links below.");
-  }
+    const live = await fetch("https://api.dexscreener.com/latest/dex/pairs/sui/" + CONFIG.poolId, { cache: "no-store" });
+    if (!live.ok) throw new Error("DexScreener unavailable");
+    const payload = await live.json(); const pair = payload.pairs && payload.pairs[0];
+    if (!pair) throw new Error("Cetus pair unavailable");
+    pool = { priceNative: pair.priceNative, priceUsd: pair.priceUsd, liquidityUsd: pair.liquidity && pair.liquidity.usd, volume24hUsd: pair.volume && pair.volume.h24, url: pair.url, fetchedAt: new Date().toISOString() };
+  } catch (_) { pool = await json("public/mine-pool.json"); }
+  const priceSui = sui(pool.priceNative); const priceUsd = money(pool.priceUsd); const tvl = money(pool.liquidityUsd); const volume = money(pool.volume24hUsd);
+  set("pool-price-sui", priceSui); set("pool-price-usd", priceUsd); set("pool-tvl", tvl); set("pool-volume", volume);
+  set("board-pool-price", priceSui + " / " + priceUsd); set("board-pool-tvl", tvl); set("board-pool-volume", volume);
+  set("cetus-stat-tvl", tvl); set("cetus-stat-price", priceSui + " / " + priceUsd); set("cetus-stat-volume", volume);
+  const dexUrl = pool.url || "https://dexscreener.com/sui/" + CONFIG.poolId;
+  const links = { "pool-swap-link": CONFIG.cetusBuyUrl, "pool-lp-link": CONFIG.poolUrl, "pool-dex-link": dexUrl, "board-pool-link": dexUrl };
+  Object.entries(links).forEach(([id, href]) => { const el = byId(id); if (el && href) el.href = href; });
+  const when = pool.fetchedAt ? new Date(pool.fetchedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "current snapshot";
+  set("pool-source-status", "DexScreener · " + when);
+}
+
+async function loadAftermathFarm() {
+  const set = (id, value) => { const el = byId(id); if (el) el.textContent = value; };
+  const endpoints = ["https://mainnet.suiet.app", CONFIG.rpcUrl].filter(Boolean);
+  try {
+    let fields;
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(endpoint, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "sui_getObject", params: [CONFIG.aftermathFarmId, { showContent: true }] }), cache: "no-store" });
+        const result = await response.json();
+        if (result.result && result.result.data && result.result.data.content && result.result.data.content.fields) { fields = result.result.data.content.fields; break; }
+      } catch (_) {}
+    }
+    if (!fields) throw new Error("Aftermath farm RPC unavailable");
+    const pick = (value) => Array.isArray(value) ? value[0] : value;
+    const rate = pick(fields.emission_rates); const frequency = Number(pick(fields.emission_frequencies_ms)); const emitted = pick(fields.total_rewards_emitted); const remaining = pick(fields.total_rewards_remaining); const staked = pick(fields.total_staked_amount);
+    const minutes = Number.isFinite(frequency) && frequency > 0 ? Math.round(frequency / 60000) : 10;
+    set("aftermath-tvl", fmt(staked, 8) + " 10MM");
+    set("aftermath-reward-rate", "~45.7 10MM / " + minutes + " min · 98% of ops mine share");
+    set("aftermath-rewards", fmt(emitted, 8) + " paid · " + fmt(remaining, 8) + " remaining");
+    set("stat-farm", fmt(staked, 8) + " 10MM");
+    set("aftermath-farm-status", "Live farm · " + fmt(rate, 8) + " configured now · 98% top-ups until height 210000");
+  } catch (_) { set("aftermath-farm-status", "Live farm stats unavailable · retrying"); }
 }
 const decimalToMist = (value) => { const input = String(value || "").trim(); if (!/^[0-9]+([.][0-9]{1,9})?$/.test(input)) throw new Error("Enter a SUI amount with up to 9 decimal places."); const parts = input.split("."); return BigInt(parts[0]) * 1000000000n + BigInt(((parts[1] || "") + "000000000").slice(0, 9)); };
 const feeEl = $("feePreview");
@@ -87,10 +60,8 @@ async function loadDashboard(address) {
   $("dashboard").hidden = false; $("wallet-address").textContent = address;
   try { const sui = await client.getBalance({ owner: address, coinType: "0x2::sui::SUI" }); $("wallet-sui").textContent = `${fmt(sui.totalBalance, 9)} SUI`; } catch { $("wallet-sui").textContent = "Pending…"; }
   try { const ten = await client.getBalance({ owner: address, coinType: coinType() }); $("wallet-10mm").textContent = `${fmt(ten.totalBalance, 8)} 10MM`; } catch { $("wallet-10mm").textContent = "Pending…"; }
-  const override = CONFIG.stats?.pendingRewards; $("wallet-rewards").textContent = override || (isHexId(CONFIG.holderRegistryId) ? "Registry live · pending field TBD" : "Pending publish");
-  if (isHexId(CONFIG.holderRegistryId)) { try { const obj = await client.getObject({ id: CONFIG.holderRegistryId, options: { showContent: true } }); const f = obj.data?.content?.fields || {}; const value = f.pending_rewards ?? f.pending_reward; if (value != null) $("wallet-rewards").textContent = String(value); } catch {} }
+  const override = CONFIG.stats?.pendingRewards; $("wallet-rewards").textContent = override || "Legacy claim balance available";
   $("wallet-note").textContent = `Balances read from ${CONFIG.network} public RPC.`;
-  await loadHolderRegistry(address);
 }
 window.addEventListener("tenmm-connected", (event) => loadDashboard(event.detail.address));
 let countdownAnchor = null;
@@ -338,7 +309,6 @@ async function refreshMine() {
   // Always seed from config so cards never stay on "Pending…"
   $("stat-reward").textContent = stats.blockReward || "50 10MM / block (then halvings)";
   $("mine-subsidy").textContent = stats.currentSubsidy || "50 10MM / block";
-  $("stat-holders").textContent = stats.holders || "Hold-to-earn registry live";
   $("stat-price").textContent = stats.price || "Cetus 10MM/SUI LP";
   $("stat-feepot").textContent = stats.feePot || "0.01 SUI tip / mine when funded";
   if ($("mine-slot")) $("mine-slot").textContent = stats.holdSlot || "Pays each ~10m block · see countdown";
@@ -371,7 +341,6 @@ async function refreshMine() {
     height = status.block_height ?? status.height ?? status.lastBlockHeight ?? null;
     minted = status.total_minted_10mm ?? status.totalMinted10mm ?? status.supply ?? null;
     subsidy = status.current_subsidy_10mm ?? status.currentSubsidy ?? null;
-    if (hasValue(status.holders)) $("stat-holders").textContent = String(status.holders);
     if (hasValue(status.price_note)) $("stat-price").textContent = String(status.price_note);
     if (hasValue(status.fee_pot_note)) $("stat-feepot").textContent = String(status.fee_pot_note);
     if (hasValue(status.hold_slot_note) && $("mine-slot")) $("mine-slot").textContent = String(status.hold_slot_note);
@@ -415,5 +384,4 @@ async function refreshMine() {
   $("stat-reward").textContent = stats.blockReward || (hasValue(subsidy) ? `${subsidy} 10MM / block` : "50 10MM / block (then halvings)");
 }
 
-function renderDapps() { const host = $("dapps"); (CONFIG.dapps || []).forEach((dapp) => { const el = dapp.url ? document.createElement("a") : document.createElement("span"); el.className = "dapp"; el.textContent = dapp.name; const note = document.createElement("small"); note.textContent = dapp.note || (dapp.url ? "Open" : "Coming at launch"); el.append(" ", note); if (dapp.url) { el.href = dapp.url; el.target = "_blank"; el.rel = "noopener noreferrer"; } host.append(el); }); }
-renderDapps(); loadPoolSnapshot(); loadCountdownAnchor().then(updateCountdown); refreshMine(); refreshMintData(); setInterval(updateCountdown, 1000); setInterval(() => { loadCountdownAnchor().then(updateCountdown); refreshMine(); }, 60000); setInterval(refreshMintData, 60000); setInterval(loadPoolSnapshot, 300000);
+loadPoolSnapshot(); loadAftermathFarm(); loadCountdownAnchor().then(updateCountdown); refreshMine(); refreshMintData(); setInterval(updateCountdown, 1000); setInterval(() => { loadCountdownAnchor().then(updateCountdown); refreshMine(); }, 60000); setInterval(refreshMintData, 60000); setInterval(loadPoolSnapshot, 300000); setInterval(loadAftermathFarm, 60000);

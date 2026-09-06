@@ -1,12 +1,12 @@
 # 10MinMine web app
 
-Static GitHub Pages-compatible UI for **claim / buy / sell / Send** plus read-only 10mmscan pages.
+Static GitHub Pages-compatible UI for **claim / buy / sell / stake** plus read-only 10mmscan pages.
 
 ## Security
 - Wallet Standard connect only — private keys/seeds never touch the page
 - Every action requires a wallet approval popup
 - Network locked to `config.js` (`testnet` / `mainnet`)
-- Move calls whitelisted to `claim`, `buy`, `sell`, and `transfer` (mapped to `protocol_transfer`)
+- Move calls are limited to legacy `claim`; swaps open in Cetus and staking opens in Aftermath
 - Object/package IDs must be `0x…` hex before actions enable
 - CSP meta restricts scripts/connections where supported
 
