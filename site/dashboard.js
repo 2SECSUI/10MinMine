@@ -29,7 +29,7 @@ function renderMintLog(entries) {
   body.replaceChildren();
   const rows = Array.isArray(entries) ? entries.filter((entry) => entry && typeof entry === "object").slice().sort((a, b) => Number(b.height ?? b.block_height ?? 0) - Number(a.height ?? a.block_height ?? 0)) : [];
   if (!rows.length) { body.innerHTML = `<tr><td colspan="5">No mint events published yet.</td></tr>`; status.textContent = "No recent blocks"; return; }
-  rows.slice(0, 20).forEach((entry) => {
+  rows.forEach((entry) => {
     const row = document.createElement("tr");
     const rewarded = entry.rewarded || entry.rewards || entry.recipients;
     let rewardedText = "—";

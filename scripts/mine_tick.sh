@@ -162,10 +162,9 @@ else
   log "no REPO_DIR at $REPO_DIR — skip github"
 fi
 
-# Optional: print X caption for a later cheap post (does not open browser)
+# Always queue an X post (never skip). The 10m Grok routine / post_pending_x.sh publishes it.
 if [[ -n "$DIGEST" ]]; then
-  cat >&2 <<MSG
-X_CAPTION<<
+  CAPTION="$(cat <<MSG
 ⛏ 10MinMine block mined
 50 10MM per block · ${BLOCKS} block(s) · +${AMOUNT_10MM} 10MM
 Height ${NEW_HEIGHT}
@@ -173,5 +172,36 @@ https://suiscan.xyz/mainnet/tx/${DIGEST}
 https://2secsui.github.io/10MinMine/site/
 #Sui #SuiNetwork #10MM #10MinMine #DeFi
 MSG
+)"
+  printf '%s
+' "$CAPTION" >&2
+  QUEUE="${QUEUE:-/workspace/10MinMine/scripts/pending_x_posts.jsonl}"
+  python3 - "$QUEUE" "$DIGEST" "$NEW_HEIGHT" "$BLOCKS" "$AMOUNT_10MM" "$CAPTION" <<'PY2'
+import json,sys,time
+from pathlib import Path
+queue, digest, height, blocks, amount, caption = sys.argv[1:7]
+Path(queue).parent.mkdir(parents=True, exist_ok=True)
+# dedupe by digest
+lines=[]
+if Path(queue).exists():
+  for line in Path(queue).read_text().splitlines():
+    if not line.strip(): continue
+    try:
+      o=json.loads(line)
+    except Exception:
+      continue
+    if o.get('digest')!=digest:
+      lines.append(line)
+row=json.dumps({"ts":int(time.time()),"digest":digest,"height":int(height),"blocks":int(blocks),"amount_10mm":str(amount),"caption":caption,"posted":False}, ensure_ascii=False)
+lines.append(row)
+Path(queue).write_text("
+".join(lines)+"
+")
+print(f"queued X post digest={digest}", flush=True)
+PY2
+  # Try local poster if present (best-effort)
+  if [[ -x /workspace/10MinMine/scripts/post_pending_x.sh ]]; then
+    /bin/bash /workspace/10MinMine/scripts/post_pending_x.sh || true
+  fi
 fi
 exit 0
