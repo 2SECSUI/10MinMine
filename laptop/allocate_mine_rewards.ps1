@@ -1,8 +1,8 @@
 # Split ops' mine payout after each successful mine (until first halving at height 210000).
 # Of OPS registry share:
-#   75% -> Aftermath farm rewards
-#   20% -> Cetus main pool
-#    5% -> Cetus secondary target with matching SUI
+#   98% -> Aftermath farm rewards
+#    1% -> Cetus main pool (10MM; with matching SUI in-range)
+#    1% -> Cetus position (10MM-only while out of range; no SUI)
 # Other registered wallets keep their on-chain mine share (e.g. ~3.333) as developer costs — not touched here.
 param(
   [Parameter(Mandatory = $true)][double]$OpsAmount10mm,
@@ -15,7 +15,7 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $HALVING_HEIGHT = 210000
 $AF_FARM = "0x89a692f70e2b831d1d6a1ec299f571ba2032c94df4fe8ed8dde2ef9b711df035"
 $CETUS_MAIN_POOL = "0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2"
-$CETUS_SECONDARY_ID = "0x885c09217753a405d987d0604ba4c78f4c34510576a478f803bf4ace91a10546"
+$CETUS_POSITION_ID = "0x885c09217753a405d987d0604ba4c78f4c34510576a478f803bf4ace91a10546"
 $OPS = "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a"
 $LOG = Join-Path $here "allocate_log.txt"
 
@@ -29,19 +29,19 @@ if ($OpsAmount10mm -le 0) {
   exit 0
 }
 
-$farm = [math]::Round($OpsAmount10mm * 0.75, 8)
-$cetusMain = [math]::Round($OpsAmount10mm * 0.20, 8)
-$cetusSecondary = [math]::Round($OpsAmount10mm * 0.05, 8)
+$farm = [math]::Round($OpsAmount10mm * 0.98, 8)
+$cetusMain = [math]::Round($OpsAmount10mm * 0.01, 8)
+$cetusPosition = [math]::Round($OpsAmount10mm * 0.01, 8)
 # fix rounding residue onto farm
-$sum = $farm + $cetusMain + $cetusSecondary
+$sum = $farm + $cetusMain + $cetusPosition
 $delta = [math]::Round($OpsAmount10mm - $sum, 8)
 $farm = [math]::Round($farm + $delta, 8)
 
 $ts = Get-Date -Format "yyyy-MM-ddTHH:mm:ssK"
-$line = "$ts height=$Height digest=$Digest ops=$OpsAmount10mm farm75=$farm cetusMain20=$cetusMain cetusSecondary5=$cetusSecondary af=$AF_FARM cetusMainPool=$CETUS_MAIN_POOL cetusSecondaryId=$CETUS_SECONDARY_ID"
+$line = "$ts height=$Height digest=$Digest ops=$OpsAmount10mm farm98=$farm cetusMain1=$cetusMain cetusPosition1=$cetusPosition af=$AF_FARM cetusMainPool=$CETUS_MAIN_POOL cetusPositionId=$CETUS_POSITION_ID"
 Add-Content -Path $LOG -Value $line -Encoding utf8
 Write-Host $line
-Write-Host ("plan: Aftermath deposit {0} 10MM | Cetus main add {1} 10MM | Cetus secondary target add {2} 10MM with matching SUI" -f $farm, $cetusMain, $cetusSecondary)
+Write-Host ("plan: Aftermath deposit {0} 10MM | Cetus main add {1} 10MM with matching SUI (in-range) | Cetus position target add {2} 10MM-only while out of range (no SUI)" -f $farm, $cetusMain, $cetusPosition)
 
 if (-not $Execute) {
   Write-Host "dry-run only (pass -Execute to top up Aftermath and queue the other allocations)"
@@ -70,11 +70,12 @@ $entry = [pscustomobject]@{
   ops_amount_10mm = $OpsAmount10mm
   aftermath_10mm = $farm
   cetus_main_10mm = $cetusMain
-  cetus_secondary_10mm = $cetusSecondary
+  cetus_position_10mm = $cetusPosition
   aftermath_farm = $AF_FARM
   cetus_main_pool = $CETUS_MAIN_POOL
-  cetus_secondary_id = $CETUS_SECONDARY_ID
-  cetus_secondary_mode = "with_matching_sui"
+  cetus_main_mode = "tenmm_with_matching_sui_in_range"
+  cetus_position_id = $CETUS_POSITION_ID
+  cetus_position_mode = "tenmm_only_while_out_of_range_no_sui"
   status = $topupStatus
   aftermath_exit_code = $topupExit
 }
