@@ -1,0 +1,48 @@
+[
+  {
+    "ts": "2026-09-06T17:45:21.527000+01:00",
+    "height": 1,
+    "blocks": 1,
+    "minted_raw": "5000000000",
+    "amount_10mm": "50",
+    "event": "mainnet_mine",
+    "digest": "E9tjqRESZbMddEDAoPYBAUg1iYyqoigQcK8J1ybieKG5",
+    "rewarded": [
+      {
+        "address": "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+        "amount_10mm": "50"
+      }
+    ]
+  },
+  {
+    "ts": "2026-09-06T18:05:35.822000+01:00",
+    "height": 3,
+    "blocks": 1,
+    "minted_raw": "5000000000",
+    "amount_10mm": "50",
+    "event": "mainnet_mine",
+    "digest": "CUBAjebHy7avqnVog4VH25N4Rf7jnNyLjFtmAJxSd3PA",
+    "rewarded": [
+      {
+        "address": "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+        "amount_10mm": "50"
+      }
+    ],
+    "note": "height 2 intermediate mine may be omitted if digest unknown"
+  },
+  {
+    "ts": "2026-09-06T18:24:18.534000+01:00",
+    "height": 4,
+    "blocks": 1,
+    "minted_raw": "5000000000",
+    "amount_10mm": "50",
+    "event": "mainnet_mine",
+    "digest": "j6gFCiGZXDteVJGH42vvYQJMJbRUUrimKSmdCDGUGxB",
+    "rewarded": [
+      {
+        "address": "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+        "amount_10mm": "50"
+      }
+    ]
+  }
+]
