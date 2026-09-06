@@ -1,4 +1,4 @@
-# One-shot 10MM mainnet mine (Windows PowerShell + Sui CLI)
+﻿# One-shot 10MM mainnet mine (Windows PowerShell + Sui CLI)
 $ErrorActionPreference = "Stop"
 $PACKAGE_ID = if ($env:PACKAGE_ID) { $env:PACKAGE_ID } else { "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98" }
 $REWARD_POOL_ID = if ($env:REWARD_POOL_ID) { $env:REWARD_POOL_ID } else { "0x32423737a8e607111bc5ecb2ac49d226cc948abe4d690b55c20d63b09ee6e619" }
@@ -13,18 +13,13 @@ if (-not (Get-Command sui -ErrorAction SilentlyContinue)) {
 }
 $envName = (sui client active-env 2>$null | Out-String).Trim()
 $addr = (sui client active-address 2>$null | Out-String).Trim()
-Write-Host "env=$envName address=$addr"
+Write-Host ("env=" + $envName + " address=" + $addr)
 if ($envName -notmatch "mainnet") {
   Write-Error "Switch to mainnet first:  sui client switch --env mainnet"
 }
 if ($addr -ne $OPS_ADDR) {
-  Write-Warning "Active address is not ops wallet. Same wallet is fine if it is $OPS_ADDR"
+  Write-Warning ("Active address is not ops wallet. Same wallet is fine if it is " + $OPS_ADDR)
 }
 
 Write-Host "calling tenmm::mine ..."
-sui client call `
-  --package $PACKAGE_ID `
-  --module tenmm `
-  --function mine `
-  --args $REWARD_POOL_ID $HOLDER_REGISTRY_ID $FEE_POT_ID $CLOCK_ID `
-  --gas-budget $GAS_BUDGET
+sui client call --package $PACKAGE_ID --module tenmm --function mine --args $REWARD_POOL_ID $HOLDER_REGISTRY_ID $FEE_POT_ID $CLOCK_ID --gas-budget $GAS_BUDGET
