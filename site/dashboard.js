@@ -296,7 +296,7 @@ function renderMintLog(entries) {
     values.forEach((value, index) => { const cell = document.createElement("td"); if (index === 2) { const code = document.createElement("code"); code.textContent = String(value); cell.append(code); } else cell.textContent = String(value); row.append(cell); });
     body.append(row);
   });
-  status.textContent = `${rows.length} recent block${rows.length === 1 ? "" : "s"}`;
+  status.textContent = rows.length + " blocks · newest first · scroll for older";
 }
 async function refreshMintData() {
   try { const log = await json("public/mine-log.json"); renderMintLog(log); } catch { renderMintLog([]); $("mint-log-status").textContent = "Mint log unavailable"; }
