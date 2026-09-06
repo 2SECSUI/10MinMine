@@ -510,14 +510,27 @@
       <p class="pool-note" id="pool-note">Snapshot is fetched from DexScreener and refreshed with the site data. Pool liquidity is currently thin; check price impact before swapping.</p>
     </div>
 
-    <div class="dex-chart-wrap" aria-label="10MM DexScreener chart">
-      <iframe
-        title="10MM / SUI DexScreener chart"
-        src="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2?embed=1&theme=dark&trades=0&info=0"
-        loading="lazy"
-        allow="clipboard-write"
-        allowfullscreen
-      ></iframe>
+    <div class="trade-row" aria-label="Chart and Cetus trade">
+      <div class="dex-chart-wrap" aria-label="10MM DexScreener chart">
+        <iframe
+          title="10MM / SUI DexScreener chart"
+          src="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2?embed=1&theme=dark&trades=0&info=0"
+          loading="lazy"
+          allow="clipboard-write"
+          allowfullscreen
+        ></iframe>
+      </div>
+      <aside class="cetus-side-card" aria-label="Cetus buy and sell">
+        <div class="eyebrow">CETUS DAPP</div>
+        <h3>Buy &amp; sell 10MM</h3>
+        <p>Opens Cetus with the live 10MM/SUI pool preselected. Check price impact — liquidity is still thin.</p>
+        <div class="cetus-trade-btns">
+          <a class="buy" id="cetus-buy-link" href="https://app.cetus.zone/swap?from=0x2%3A%3Asui%3A%3ASUI&amp;to=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&amp;poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">Buy 10MM on Cetus</a>
+          <a class="sell" id="cetus-sell-link" href="https://app.cetus.zone/swap?from=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&amp;to=0x2%3A%3Asui%3A%3ASUI&amp;poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">Sell 10MM on Cetus</a>
+          <a id="pool-lp-side-link" href="https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be" target="_blank" rel="noopener noreferrer" style="min-height:40px;border:1px solid #334155;color:#e5e7eb;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;text-decoration:none">Add LP</a>
+        </div>
+        <p class="side-note">DEX swaps do not update the holder registry. Use <a href="#send" style="color:#fdba74">Send</a> for tracked transfers.</p>
+      </aside>
     </div>
 
     <div class="cetus-terminal-shell" aria-label="Cetus swap terminal">
@@ -528,7 +541,7 @@
     </div>
     <div id="feePreview" class="fee-preview">Swaps use Cetus pool fees — review price impact on Cetus before confirming.</div>
     <p class="swap-disclaimer"><strong>Swap note:</strong> DEX swaps do not update the protocol holder registry. Use this site's <a href="#send">Send</a> flow for tracked transfers.</p>
-    <div class="swap-fallbacks" aria-label="Cetus fallback links"><span>Terminal fallback:</span><a id="cetus-buy-link" href="https://app.cetus.zone/swap?from=0x2%3A%3Asui%3A%3ASUI&amp;to=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&amp;poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">Buy 10MM on Cetus</a><a id="cetus-sell-link" href="https://app.cetus.zone/swap?from=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&amp;to=0x2%3A%3Asui%3A%3ASUI&amp;poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">Sell 10MM on Cetus</a></div>
+    <div class="swap-fallbacks" aria-label="Cetus embedded terminal note"><span>Prefer the Buy/Sell buttons beside the chart, or use the embedded terminal below.</span></div>
     <div id="status" class="status">Cetus Terminal is loading. Connect Slush here for claim and Send.</div>
     <div id="wallet-help" class="wallet-help" role="alert" hidden>
       <strong>Mobile wallet connection</strong>
@@ -623,5 +636,5 @@
 </main>
 <link rel="stylesheet" href="https://archive.cetus.zone/assets/terminal/style-v2.css" />
 <script src="https://archive.cetus.zone/assets/terminal/main-v2.js"></script>
-<script type="module" src="app.js?v=dexchart1"></script>
-<script type="module" src="dashboard.js?v=dexchart1"></script>
+<script type="module" src="app.js?v=buysell1"></script>
+<script type="module" src="dashboard.js?v=buysell1"></script>
