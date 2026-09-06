@@ -1,4 +1,4 @@
-﻿# Mine only if >= 600s since last on-chain block
+﻿# Mine only if >= 600s since last on-chain block, then log + GitHub publish
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $REWARD_POOL_ID = if ($env:REWARD_POOL_ID) { $env:REWARD_POOL_ID } else { "0x32423737a8e607111bc5ecb2ac49d226cc948abe4d690b55c20d63b09ee6e619" }
@@ -33,5 +33,4 @@ finally {
   Remove-Item -LiteralPath $tmp -ErrorAction SilentlyContinue
 }
 
-$once = Join-Path $here "mine_once.ps1"
-& $once
+& (Join-Path $here "mine_once.ps1")
