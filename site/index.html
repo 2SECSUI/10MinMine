@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://esm.sh https://fullnode.testnet.sui.io https://fullnode.mainnet.sui.io https://*.sui.io wss://*.sui.io; img-src 'self' data:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh https://archive.cetus.zone; connect-src 'self' https://esm.sh https://fullnode.testnet.sui.io https://fullnode.mainnet.sui.io https://*.sui.io wss://*.sui.io https://cetus.zone https://*.cetus.zone; img-src 'self' data: https://cetus.zone https://*.cetus.zone; font-src 'self' data: https://cetus.zone https://*.cetus.zone; style-src 'self' 'unsafe-inline' https://archive.cetus.zone; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <meta name="referrer" content="no-referrer" />
   <title>10MinMine · 10MM</title>
     <style>
@@ -167,6 +167,12 @@
     .wallet-help a { display: inline-block; font-weight: 700; color: #c2410c; }
     #confetti-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
 
+    .cetus-terminal-shell { width: 100%; min-height: 480px; margin: 18px 0 12px; }
+    #cetus-terminal { width: 100%; min-height: 480px; }
+    .swap-disclaimer { margin: 10px 0 0; padding: 10px 12px; border-left: 3px solid var(--accent); background: #fff7ed; color: var(--muted); font-size: 0.82rem; }
+    .swap-fallbacks { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; font-size: 0.82rem; }
+    .swap-fallbacks a { color: var(--accent2); font-weight: 700; }
+
   </style>
 </head>
 <body>
@@ -211,14 +217,17 @@
 
   <section class="panel buy-panel" id="get-10mm">
     <div class="eyebrow">GET 10MM</div><h2>Buy, sell, or claim</h2>
-    <p><strong>Buy</strong> and <strong>Sell</strong> open the Cetus dapp for the live 10MM/SUI pool. <strong>Claim</strong> still uses this site with your connected wallet.</p>
+    <p>Swap SUI and 10MM in the embedded Cetus Terminal. <strong>Claim</strong> still uses this site with your connected Slush wallet.</p>
+    <div class="cetus-terminal-shell" aria-label="Cetus swap terminal">
+      <div id="cetus-terminal"></div>
+    </div>
     <div class="actions">
-      <button data-action="buy" type="button">Buy 10MM on Cetus</button>
-      <button data-action="sell" class="secondary" type="button">Sell 10MM on Cetus</button>
       <button data-action="claim" class="secondary" type="button" disabled>Claim rewards</button>
     </div>
     <div id="feePreview" class="fee-preview">Swaps use Cetus pool fees — review price impact on Cetus before confirming.</div>
-    <div id="status" class="status">Buy/Sell open Cetus. Connect Slush here for claim and Send.</div>
+    <p class="swap-disclaimer"><strong>Swap note:</strong> DEX swaps do not update the protocol holder registry. Use this site's <a href="#send">Send</a> flow for tracked transfers.</p>
+    <div class="swap-fallbacks" aria-label="Cetus fallback links"><span>Terminal fallback:</span><a id="cetus-buy-link" href="https://app.cetus.zone/swap?from=0x2%3A%3Asui%3A%3ASUI&amp;to=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&amp;poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">Buy 10MM on Cetus</a><a id="cetus-sell-link" href="https://app.cetus.zone/swap?from=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&amp;to=0x2%3A%3Asui%3A%3ASUI&amp;poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">Sell 10MM on Cetus</a></div>
+    <div id="status" class="status">Cetus Terminal is loading. Connect Slush here for claim and Send.</div>
     <div id="wallet-help" class="wallet-help" role="alert" hidden>
       <strong>Mobile wallet connection</strong>
       <p>This site only connects to Slush (not Binance). On phone: open this page inside the Slush app browser. On desktop: install or unlock the Slush extension, then tap Connect Slush.</p>
@@ -303,5 +312,7 @@
 
   <footer>Official 10MinMine UI · claim / buy / sell / send · package IDs are configured per network · always verify you are on the official site before connecting.</footer>
 </main>
-<script type="module" src="app.js?v=slush2"></script>
+<link rel="stylesheet" href="https://archive.cetus.zone/assets/terminal/style-v2.css" />
+<script src="https://archive.cetus.zone/assets/terminal/main-v2.js"></script>
+<script type="module" src="app.js?v=slush3-cetus"></script>
 <script type="module" src="dashboard.js"></script>

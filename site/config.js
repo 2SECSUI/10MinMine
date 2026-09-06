@@ -12,8 +12,8 @@ export const CONFIG = {
   poolId: '0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
   positionId: '0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be',
   poolUrl: 'https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be',
-  cetusBuyUrl: 'https://app.cetus.zone/swap?from=0x2::sui::SUI&to=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
-  cetusSellUrl: 'https://app.cetus.zone/swap?from=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&to=0x2::sui::SUI&poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
+  cetusBuyUrl: 'https://app.cetus.zone/swap?from=0x2%3A%3Asui%3A%3ASUI&to=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
+  cetusSellUrl: 'https://app.cetus.zone/swap?from=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&to=0x2%3A%3Asui%3A%3ASUI&poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
   coinType: '0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM',
   iconUrl: 'https://raw.githubusercontent.com/2SECSUI/10MinMine/main/site/public/10mmLogo.png',
   explorer: {

@@ -3,7 +3,7 @@
   import { Transaction } from 'https://esm.sh/@mysten/sui@1.39.0/transactions';
   import { CONFIG } from './config.js';
 
-  const ALLOWED_ACTIONS = new Set(['claim', 'buy', 'sell', 'transfer']);
+  const ALLOWED_ACTIONS = new Set(['claim', 'transfer']);
   const $ = (id) => document.getElementById(id);
   const statusEl = $('status');
   $("hero-connect").onclick = () => $("connect").click();
@@ -31,15 +31,31 @@
 
   const chain = `sui:${CONFIG.network}`;
   const setStatus = (text) => { statusEl.textContent = text; };
+  // Initialize the embedded terminal with the live SUI/10MM pair. The fallback
+  // links stay available if a browser blocks the CDN or the terminal cannot lock tokens.
+  const buyLink = document.getElementById('cetus-buy-link');
+  const sellLink = document.getElementById('cetus-sell-link');
+  if (buyLink) buyLink.href = cetusBuyUrl || '#';
+  if (sellLink) sellLink.href = cetusSellUrl || '#';
+  try {
+    if (!window.CetusSwap?.init) throw new Error('Cetus Terminal is unavailable. Use a fallback link below.');
+    window.CetusSwap.init({
+      containerId: 'cetus-terminal',
+      displayMode: 'Integrated',
+      independentWallet: true,
+      themeType: 'Light',
+      defaultSlippage: 1,
+      defaultFromToken: '0x2::sui::SUI',
+      defaultToToken: CONFIG.coinType || `${CONFIG.packageId}::tenmm::TENMM`,
+      poolAddress: CONFIG.poolId,
+    });
+  } catch (e) {
+    setStatus(e.message || 'Cetus Terminal failed to load. Use a fallback link below.');
+  }
   const decimalToMist = (input) => { const value = String(input || '').trim(); if (!/^[0-9]+([.][0-9]{1,9})?$/.test(value)) throw new Error('Enter a SUI amount with up to 9 decimal places.'); const parts = value.split('.'); return BigInt(parts[0]) * 1000000000n + BigInt(((parts[1] || '') + '000000000').slice(0, 9)); };
   const decimalToBaseUnits = (input, decimals, label) => { const value = String(input || "").trim(); const pattern = new RegExp("^[0-9]+([.][0-9]{1," + decimals + "})?" + String.fromCharCode(36)); if (!pattern.test(value)) throw new Error("Enter a " + label + " amount with up to " + decimals + " decimal places."); const parts = value.split("."); return BigInt(parts[0]) * (10n ** BigInt(decimals)) + BigInt(((parts[1] || "") + "0".repeat(decimals)).slice(0, decimals)); };
   const setActionsEnabled = (on) => {
     document.querySelectorAll('[data-action]').forEach((b) => {
-      const action = b.dataset.action;
-      if ((action === 'buy' && cetusBuyUrl) || (action === 'sell' && cetusSellUrl)) {
-        b.disabled = false;
-        return;
-      }
       b.disabled = !on;
     });
     $('disconnect').disabled = !account;
@@ -151,16 +167,6 @@
   async function call(action) {
     try {
       if (!ALLOWED_ACTIONS.has(action)) return setStatus('Blocked: unknown action.');
-      if (action === 'buy') {
-        if (!cetusBuyUrl) return setStatus('Cetus buy link not configured.');
-        window.open(cetusBuyUrl, '_blank', 'noopener,noreferrer');
-        return setStatus('Opened Cetus to buy 10MM with SUI. Complete the swap in the Cetus dapp.');
-      }
-      if (action === 'sell') {
-        if (!cetusSellUrl) return setStatus('Cetus sell link not configured.');
-        window.open(cetusSellUrl, '_blank', 'noopener,noreferrer');
-        return setStatus('Opened Cetus to sell 10MM for SUI. Complete the swap in the Cetus dapp.');
-      }
       if (!wallet || !account) return setStatus('Connect Slush first.');
       if (!configured) return setStatus('Configure verified package/object IDs in site/config.js first.');
       const signFeat = wallet.features['sui:signAndExecuteTransaction'] || wallet.features['sui:signAndExecuteTransactionBlock'];
@@ -255,8 +261,8 @@
   refreshStats();
   setInterval(refreshStats, 60_000);
 
-  // Buy/Sell open Cetus without a prior site wallet connect.
-  setActionsEnabled(Boolean(cetusBuyUrl || cetusSellUrl));
+  // Claim and Send remain gated by the existing Slush connection.
+  setActionsEnabled(false);
 
   // Launch confetti (once per session)
   async function celebrateLaunch() {
