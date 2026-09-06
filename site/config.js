@@ -9,8 +9,9 @@ export const CONFIG = {
   coinMetadataId: '0xf75e87d9c3c2f662db6e436d11d400c6161480840b06d954005510344efd6ef5',
   genesisLockId: '0xdab05f52179b8f13488fe0adc9ac83f12873a9ca6292ed51fa178eeb6724d7c6',
   clockId: '0x6',
-  poolId: '',
-  poolUrl: '',
+  poolId: '0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
+  positionId: '0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be',
+  poolUrl: 'https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be',
   coinType: '0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM',
   iconUrl: 'https://raw.githubusercontent.com/2SECSUI/10MinMine/main/site/public/10mmLogo.png',
   explorer: {
@@ -19,7 +20,8 @@ export const CONFIG = {
     metadata: 'https://suiscan.xyz/mainnet/object/0xf75e87d9c3c2f662db6e436d11d400c6161480840b06d954005510344efd6ef5',
   },
   dapps: [
-    { name: 'Cetus', url: '' }, { name: 'Scallop', url: '' },
+    { name: 'Cetus', url: 'https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be' },
+    { name: 'Scallop', url: '' },
     { name: 'Suilend', url: '' }, { name: 'Bluefin', url: '' },
     { name: 'Navi', url: '' }, { name: 'DeepTrade', url: '' },
     { name: 'AlphaLend', url: '' }, { name: 'TBook', url: '' },
