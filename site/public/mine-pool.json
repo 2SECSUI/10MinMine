@@ -1,0 +1,20 @@
+{
+  "priceUsd": "0.03183",
+  "priceNative": "0.04002",
+  "liquidityUsd": 30.26,
+  "volume24hUsd": 0.79,
+  "base": {
+    "address": "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM",
+    "name": "10MinMine",
+    "symbol": "10MM"
+  },
+  "quote": {
+    "address": "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+    "name": "SUI Token",
+    "symbol": "SUI"
+  },
+  "url": "https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2",
+  "dexId": "cetus",
+  "pairAddress": "0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2",
+  "fetchedAt": "2026-09-06T20:28:45.275683+00:00"
+}

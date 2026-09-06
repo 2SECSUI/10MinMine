@@ -22,12 +22,12 @@ export const CONFIG = {
     metadata: 'https://suiscan.xyz/mainnet/object/0xf75e87d9c3c2f662db6e436d11d400c6161480840b06d954005510344efd6ef5',
   },
   dapps: [
-    { name: 'Cetus', url: 'https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be' },
+    { name: 'Cetus', url: 'https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be', note: 'Live 10MM/SUI pool' },
     { name: 'Scallop', url: '' },
     { name: 'Suilend', url: '' }, { name: 'Bluefin', url: '' },
     { name: 'Navi', url: '' }, { name: 'DeepTrade', url: '' },
     { name: 'AlphaLend', url: '' }, { name: 'TBook', url: '' },
-    { name: 'Turbos', url: '' }, { name: 'AlphaFi', url: '' },
+    { name: 'Turbos', url: 'https://turbos.finance/', note: 'Turbos \u2014 add when Cetus TVL grows; 10MM pool is not listed yet' }, { name: 'AlphaFi', url: '' },
     { name: 'Momentum', url: '' },
   ],
   stats: {
@@ -41,5 +41,9 @@ export const CONFIG = {
     feePot: '0.01 SUI tip / mine when funded',
     holdSlot: 'Rewards each ~10m block · see countdown',
     pool: 'Cetus 10MM/SUI',
+    holderRegistryFallbacks: {
+      principal: 'Registry lookup unavailable',
+      pendingFee: 'Paid during mine - lookup unavailable',
+    },
   },
 };
