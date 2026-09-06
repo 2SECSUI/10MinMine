@@ -2,8 +2,8 @@
   "network": "mainnet",
   "packageId": "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98",
   "rewardPoolId": "0x32423737a8e607111bc5ecb2ac49d226cc948abe4d690b55c20d63b09ee6e619",
-  "height": 9,
-  "lastMineDigest": "GAJVvu6cZnB9tfZMC8h6dXfiuM8sys7MuSfmVuA1GbRP",
-  "updatedAt": "2026-09-06T18:15:20Z",
+  "height": 10,
+  "lastMineDigest": "8eaSps735GY2JPQLurBA4P9dySjjLerG5uBZQsrdG2MA",
+  "updatedAt": "2026-09-06T18:16:51Z",
   "launchAt": "2026-09-06T16:44:56Z"
 }

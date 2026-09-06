@@ -74,5 +74,21 @@
         "amount_10mm": "100"
       }
     ]
+  },
+  {
+    "ts": "2026-09-06T19:16:51.295627+01:00",
+    "height": 10,
+    "blocks": 1,
+    "minted_raw": "5000000000",
+    "amount_10mm": "50",
+    "event": "mainnet_mine",
+    "digest": "8eaSps735GY2JPQLurBA4P9dySjjLerG5uBZQsrdG2MA",
+    "rewarded": [
+      {
+        "address": "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+        "amount_10mm": "50"
+      }
+    ],
+    "note": "50 10MM per block"
   }
 ]
