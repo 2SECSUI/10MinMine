@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh https://archive.cetus.zone; connect-src 'self' https://esm.sh https://fullnode.testnet.sui.io https://fullnode.mainnet.sui.io https://*.sui.io wss://*.sui.io https://cetus.zone https://*.cetus.zone wss://cetus.zone wss://*.cetus.zone; img-src 'self' data: https://cetus.zone https://*.cetus.zone; font-src 'self' data: https://cetus.zone https://*.cetus.zone; style-src 'self' 'unsafe-inline' https://archive.cetus.zone; object-src 'none'; base-uri 'self'; form-action 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh https://archive.cetus.zone https://dexscreener.com https://*.dexscreener.com; connect-src 'self' https://esm.sh https://fullnode.testnet.sui.io https://fullnode.mainnet.sui.io https://*.sui.io wss://*.sui.io https://cetus.zone https://*.cetus.zone wss://cetus.zone wss://*.cetus.zone https://dexscreener.com https://*.dexscreener.com https://api.dexscreener.com; img-src 'self' data: https://cetus.zone https://*.cetus.zone https://dexscreener.com https://*.dexscreener.com; font-src 'self' data: https://cetus.zone https://*.cetus.zone https://dexscreener.com https://*.dexscreener.com; style-src 'self' 'unsafe-inline' https://archive.cetus.zone https://dexscreener.com https://*.dexscreener.com; frame-src https://dexscreener.com https://*.dexscreener.com; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <meta name="referrer" content="no-referrer" />
   <title>10MinMine · 10MM</title>
     <style>
@@ -509,6 +509,17 @@
       </div>
       <p class="pool-note" id="pool-note">Snapshot is fetched from DexScreener and refreshed with the site data. Pool liquidity is currently thin; check price impact before swapping.</p>
     </div>
+
+    <div class="dex-chart-wrap" aria-label="10MM DexScreener chart">
+      <iframe
+        title="10MM / SUI DexScreener chart"
+        src="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2?embed=1&theme=dark&trades=0&info=0"
+        loading="lazy"
+        allow="clipboard-write"
+        allowfullscreen
+      ></iframe>
+    </div>
+
     <div class="cetus-terminal-shell" aria-label="Cetus swap terminal">
       <div id="cetus-terminal"></div>
     </div>
@@ -612,5 +623,5 @@
 </main>
 <link rel="stylesheet" href="https://archive.cetus.zone/assets/terminal/style-v2.css" />
 <script src="https://archive.cetus.zone/assets/terminal/main-v2.js"></script>
-<script type="module" src="app.js?v=pool-holder2"></script>
-<script type="module" src="dashboard.js?v=pool-holder2"></script>
+<script type="module" src="app.js?v=dexchart1"></script>
+<script type="module" src="dashboard.js?v=dexchart1"></script>
