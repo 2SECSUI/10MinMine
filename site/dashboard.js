@@ -6,8 +6,8 @@ const fmt = (raw, decimals) => { try { const n = BigInt(raw || 0); const base = 
 const isHexId = (v) => typeof v === "string" && /^0x[0-9a-fA-F]+$/.test(v);
 const coinType = () => CONFIG.coinType || (CONFIG.packageId ? `${CONFIG.packageId}::tenmm::TENMM` : "");
 const decimalToMist = (value) => { const input = String(value || "").trim(); if (!/^[0-9]+([.][0-9]{1,9})?$/.test(input)) throw new Error("Enter a SUI amount with up to 9 decimal places."); const parts = input.split("."); return BigInt(parts[0]) * 1000000000n + BigInt(((parts[1] || "") + "000000000").slice(0, 9)); };
-const updateFee = () => { try { const fee = (decimalToMist($("buyAmount").value) * 3n) / 1000n; $("feePreview").textContent = `Estimated 0.3% fee: ${fmt(fee, 9)} SUI`; } catch { $("feePreview").textContent = "Estimated 0.3% fee: —"; } };
-$("buyAmount").addEventListener("input", updateFee);
+const feeEl = $("feePreview");
+if (feeEl) feeEl.textContent = "Swaps use Cetus pool fees — review price impact on Cetus before confirming.";
 async function loadDashboard(address) {
   $("dashboard").hidden = false; $("wallet-address").textContent = address;
   try { const sui = await client.getBalance({ owner: address, coinType: "0x2::sui::SUI" }); $("wallet-sui").textContent = `${fmt(sui.totalBalance, 9)} SUI`; } catch { $("wallet-sui").textContent = "Pending…"; }
