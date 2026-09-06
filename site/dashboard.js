@@ -18,7 +18,41 @@ async function loadDashboard(address) {
   $("wallet-note").textContent = `Balances read from ${CONFIG.network} public RPC.`;
 }
 window.addEventListener("tenmm-connected", (event) => loadDashboard(event.detail.address));
-const updateCountdown = () => { const now = Math.floor(Date.now() / 1000); const next = (Math.floor(now / 600) + 1) * 600; const left = Math.max(0, next - now); $("countdown").textContent = `Next boundary in ${String(Math.floor(left / 60)).padStart(2, "0")}:${String(left % 60).padStart(2, "0")}`; };
+let countdownAnchor = null;
+const wallClockNextBoundary = () => {
+  const now = Math.floor(Date.now() / 1000);
+  return (Math.floor(now / 600) + 1) * 600;
+};
+const parseStatusTs = (status) => {
+  if (!status || typeof status !== 'object') return null;
+  const next = Number(status.next_block_ts);
+  if (Number.isFinite(next) && next > 0) return next;
+  const last = Number(status.last_block_ts);
+  if (Number.isFinite(last) && last > 0) return last + 600;
+  const updated = status.updatedAt || status.updated_at;
+  if (updated) {
+    const ms = Date.parse(updated);
+    if (!Number.isNaN(ms)) return Math.floor(ms / 1000) + 600;
+  }
+  return null;
+};
+async function loadCountdownAnchor() {
+  try {
+    const status = await json('public/mine-status.json');
+    countdownAnchor = parseStatusTs(status);
+  } catch {
+    /* keep prior anchor */
+  }
+}
+const updateCountdown = () => {
+  const el = $('countdown');
+  if (!el) return;
+  const now = Math.floor(Date.now() / 1000);
+  const next = countdownAnchor || wallClockNextBoundary();
+  const left = Math.max(0, next - now);
+  const label = countdownAnchor ? 'Next mine in' : 'Next boundary in';
+  el.textContent = `${label} ${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`;
+};
 const field = (obj, names) => names.map((name) => obj[name]).find((value) => value !== undefined && value !== null);
 const hasValue = (value) => value !== undefined && value !== null && value !== "";
 const json = async (path) => { const response = await fetch(path, { cache: "no-store" }); if (!response.ok) throw new Error(`${path}: ${response.status}`); return response.json(); };
@@ -138,4 +172,4 @@ async function refreshMine() {
 }
 
 function renderDapps() { const host = $("dapps"); (CONFIG.dapps || []).forEach((dapp) => { const el = dapp.url ? document.createElement("a") : document.createElement("span"); el.className = "dapp"; el.textContent = dapp.name; const note = document.createElement("small"); note.textContent = dapp.url ? "Open" : "Coming at launch"; el.append(" ", note); if (dapp.url) { el.href = dapp.url; el.target = "_blank"; el.rel = "noopener noreferrer"; } host.append(el); }); }
-renderDapps(); updateCountdown(); refreshMine(); refreshMintData(); setInterval(updateCountdown, 1000); setInterval(refreshMine, 60000); setInterval(refreshMintData, 60000);
+renderDapps(); loadCountdownAnchor().then(updateCountdown); refreshMine(); refreshMintData(); setInterval(updateCountdown, 1000); setInterval(() => { loadCountdownAnchor().then(updateCountdown); refreshMine(); }, 60000); setInterval(refreshMintData, 60000);

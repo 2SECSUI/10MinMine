@@ -82,6 +82,8 @@ $status = [pscustomobject]@{
   poolUrl = "https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be"
   updatedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
   launchAt = "2026-09-06T16:44:56Z"
+  last_block_ts = [int][DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+  next_block_ts = [int]([DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 600)
 }
 
 $log | ConvertTo-Json -Depth 8 | Set-Content -Path $logPath -Encoding utf8
