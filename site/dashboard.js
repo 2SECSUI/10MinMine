@@ -60,7 +60,7 @@ async function loadDashboard(address) {
   $("dashboard").hidden = false; $("wallet-address").textContent = address;
   try { const sui = await client.getBalance({ owner: address, coinType: "0x2::sui::SUI" }); $("wallet-sui").textContent = `${fmt(sui.totalBalance, 9)} SUI`; } catch { $("wallet-sui").textContent = "Pending…"; }
   try { const ten = await client.getBalance({ owner: address, coinType: coinType() }); $("wallet-10mm").textContent = `${fmt(ten.totalBalance, 8)} 10MM`; } catch { $("wallet-10mm").textContent = "Pending…"; }
-  const override = CONFIG.stats?.pendingRewards; $("wallet-rewards").textContent = override || "Legacy claim balance available";
+  const override = CONFIG.stats?.pendingRewards; $("wallet-rewards").textContent = override || "See Aftermath farm";
   $("wallet-note").textContent = `Balances read from ${CONFIG.network} public RPC.`;
 }
 window.addEventListener("tenmm-connected", (event) => loadDashboard(event.detail.address));

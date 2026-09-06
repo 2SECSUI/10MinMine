@@ -107,9 +107,10 @@
     }
     .dashboard-item small { display: block; color: var(--muted); margin-bottom: 3px; font-size: 0.72rem }
     .dashboard-item strong { display: block; overflow-wrap: anywhere; font-size: 0.88rem; font-weight: 650 }
-    .mint-log { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 16px }
+    .mint-log { margin-top: 0; border-top: 0; padding-top: 0 }
+    .mint-log-panel { margin-top: 14px }
     .mint-log-heading { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; flex-wrap: wrap }
-    .mint-log-heading h3 { margin: 0; font-size: 0.94rem; font-weight: 700 }
+    .mint-log-heading h2 { margin: 0; font-size: 0.94rem; font-weight: 700 }
     .mint-log-status { color: var(--muted); font-size: 0.8rem; margin-top: 4px }
     .mint-log-wrap { max-height: calc(2.35rem * 10 + 2.2rem); overflow-y: auto; overflow-x: hidden; margin-top: 10px; border: 1px solid var(--line); border-radius: 10px; scrollbar-color: var(--muted) transparent }
     .mint-log-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 0 }
@@ -493,7 +494,7 @@
       <span><strong>10MinMine</strong><span>Ticker 10MM · Sui mainnet</span></span>
     </a>
     <nav class="top-nav" aria-label="Primary">
-      <a href="#live-board">Live</a><a href="#dashboard">Dashboard</a><a href="#mine">Mine</a><a href="#get-10mm">Get 10MM</a><a href="#stake-farm">Stake &amp; earn</a><a href="#terms">Terms</a><a href="10mmscan/">10mmscan</a>
+      <a href="#live-board">Live</a><a href="#dashboard">Dashboard</a><a href="#mine">Mine</a><a href="#get-10mm">Get 10MM</a><a href="#stake-farm">Stake &amp; earn</a><a href="#terms">Terms</a>
     </nav>
     <div class="header-actions">
       <button id="connect" type="button">Connect Slush</button>
@@ -569,11 +570,9 @@
     <div class="eyebrow">A fixed-supply mining coin on Sui</div>
     <h1>10MinMine is a fixed-supply mining coin on Sui.</h1>
     <p class="lead">Bitcoin-style issuance, with a new block about every ten minutes. 10MM has a <strong>21,000,000 hard cap</strong>, eight decimals, and rewards that halve on a long-term schedule.</p>
-    <p class="lead"><strong>Stake on Aftermath for mine rewards. Provide Cetus LP for trading fees.</strong> Buy 10MM on Cetus, then stake it; connect a wallet only when you need a legacy claim.</p>
+    <p class="lead"><strong>Stake on Aftermath for mine rewards. Provide Cetus LP for trading fees.</strong> Buy 10MM on Cetus, then stake it; connect a wallet when you need to check balances.</p>
     <div class="hero-actions">
       <button id="hero-connect" type="button">Connect Slush</button>
-      <button data-action="claim" type="button" disabled>Legacy claim</button>
-      <a href="10mmscan/">Open 10mmscan <span aria-hidden="true">→</span></a>
     </div>
     <div class="secure">Wallet Standard only. This page never asks for a seed phrase or private key. Every transaction opens your wallet for approval.</div>
   </section>
@@ -586,7 +585,7 @@
 
   <section class="panel buy-panel" id="get-10mm">
     <div class="eyebrow">GET 10MM</div><h2>Buy on Cetus, then stake on Aftermath</h2>
-    <p>Swap SUI and 10MM in the embedded Cetus Terminal, then move your 10MM to the Aftermath farm. Bare wallet balances and DEX holdings do not earn mine-funded rewards until staked. <strong>Claim</strong> remains available here for legacy balances.</p>
+    <p>Swap SUI and 10MM in the embedded Cetus Terminal, then move your 10MM to the Aftermath farm. Bare wallet balances and DEX holdings do not earn mine-funded rewards until staked.</p>
     <div class="pool-card" id="cetus-pool-card" aria-label="Live Cetus pool data">
       <div class="pool-card-header"><div><div class="eyebrow">LIVE CETUS POOL</div><h3>10MM / SUI liquidity</h3></div><span class="pool-source" id="pool-source-status">DexScreener snapshot loading…</span></div>
       <div class="pool-grid">
@@ -620,13 +619,10 @@
       </aside>
 
     </div>
-    <div class="actions">
-      <button data-action="claim" class="secondary" type="button" disabled>Legacy claim</button>
-    </div>
     <div id="feePreview" class="fee-preview">Swaps use Cetus pool fees — review price impact on Cetus before confirming.</div>
     <p class="swap-disclaimer"><strong>Swap note:</strong> Cetus swaps use the 10MM/SUI pool and LP fees go to liquidity providers. Wallet or DEX holdings do not earn mine-funded rewards until staked on Aftermath.</p>
     <div class="swap-fallbacks" aria-label="Cetus embedded terminal note"><span>Use the embedded Cetus swap card beside the chart.</span></div>
-    <div id="status" class="status">Cetus Terminal is loading. Connect Slush here for legacy claims. Stake on Aftermath for mine-funded rewards.</div>
+    <div id="status" class="status">Cetus Terminal is loading. Connect Slush to view wallet balances. Stake on Aftermath for mine-funded rewards.</div>
     <div id="wallet-help" class="wallet-help" role="alert" hidden>
       <strong>Mobile wallet connection</strong>
       <p>This site only connects to Slush (not Binance). On phone: open this page inside the Slush app browser. On desktop: install or unlock the Slush extension, then tap Connect Slush.</p>
@@ -651,8 +647,11 @@
       <div class="dashboard-item"><small>Price</small><strong id="stat-price">Pending LP</strong></div>
       <div class="dashboard-item"><small>Network note</small><strong id="stat-network">—</strong></div>
     </div>
-    <div class="mint-log" aria-labelledby="mint-log-title">
-      <div class="mint-log-heading"><h3 id="mint-log-title">Mint log</h3><span id="mint-log-status">Loading recent blocks…</span></div>
+  </section>
+
+  <section class="panel mint-log-panel" id="mint-log" aria-labelledby="mint-log-title">
+    <div class="mint-log">
+      <div class="mint-log-heading"><h2 id="mint-log-title">Mint log</h2><span id="mint-log-status">Loading recent blocks…</span></div>
       <div class="mint-log-wrap">
         <table class="mint-log-table">
           <thead><tr><th scope="col">Minted</th><th scope="col">Time</th></tr></thead>
@@ -663,14 +662,14 @@
   </section>
 
   <section class="panel" id="live-stats">
-    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:end"><div><div class="eyebrow">LIVE STATS</div><h2>Network snapshot</h2><p style="margin:8px 0 0">Fills in as each source comes online after publish / LP.</p></div><a href="10mmscan/" style="font-weight:700">Open 10mmscan →</a></div>
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:end"><div><div class="eyebrow">LIVE STATS</div><h2>Network snapshot</h2><p style="margin:8px 0 0">Fills in as each source comes online after publish / LP.</p></div></div>
     <div class="grid" style="margin-top:16px"><article class="card"><h2>Block reward</h2><p id="stat-reward-copy">See live board ↑</p></article><article class="card"><h2>Price</h2><p id="stat-price-copy">Cetus 10MM/SUI</p></article><article class="card"><h2>LP pool</h2><p id="stat-pool-copy">See live board ↑</p></article><article class="card"><h2>Fee pot (SUI)</h2><p id="stat-feepot-copy">0.01 SUI tip / mine when funded</p></article><article class="card"><h2>Network</h2><p id="stat-network-copy">mainnet</p></article></div>
   </section>
 
   <section class="grid">
-    <article class="card"><h2>How rewards work</h2><ol class="steps"><li><strong>Buy 10MM on Cetus</strong> using the live 10MM/SUI pool.</li><li><strong>Stake on Aftermath</strong> to enter the reward path.</li><li>Every ~10 minutes a <strong>mine</strong> call advances the schedule.</li><li>Mine-funded rewards flow to the farm; <strong>claim</strong> remains a fallback for legacy balances.</li></ol></article>
+    <article class="card"><h2>How rewards work</h2><ol class="steps"><li><strong>Buy 10MM on Cetus</strong> using the live 10MM/SUI pool.</li><li><strong>Stake on Aftermath</strong> to enter the reward path.</li><li>Every ~10 minutes a <strong>mine</strong> call advances the schedule.</li><li>Mine-funded rewards flow to the farm.</li></ol></article>
     <article class="card"><h2>Supply rules</h2><p>Hard cap 21M. Genesis 50 is permanently locked. No extra minting beyond the block schedule. After the long emission era, new 10MM stops; trading and fee-based tips can continue.</p></article>
-    <article class="card"><h2>Built for Sui</h2><p>10MinMine uses Sui wallet standards and public network data. Check live balances and token activity with 10mmscan.</p></article>
+    <article class="card"><h2>Built for Sui</h2><p>10MinMine uses Sui wallet standards and public network data. Check live balances and token activity on Sui.</p></article>
   </section>
 
   <section class="panel" id="terms">
@@ -695,7 +694,7 @@
     </div>
   </section>
 
-  <footer>Official 10MinMine UI · legacy claim / buy / sell / stake · package IDs are configured per network · always verify you are on the official site before connecting.</footer>
+  <footer>Official 10MinMine UI · buy / sell / stake · package IDs are configured per network · always verify you are on the official site before connecting.</footer>
 </main>
 <link rel="stylesheet" href="https://archive.cetus.zone/assets/terminal/style-v2.css" />
 <script src="https://archive.cetus.zone/assets/terminal/main-v2.js"></script>

@@ -1,9 +1,7 @@
 import { getWallets } from 'https://esm.sh/@wallet-standard/app@1.1.0';
 import { SuiClient, getFullnodeUrl } from 'https://esm.sh/@mysten/sui@1.39.0/client';
-import { Transaction } from 'https://esm.sh/@mysten/sui@1.39.0/transactions';
 import { CONFIG } from './config.js';
 
-const ALLOWED_ACTIONS = new Set(['claim']);
 const $ = (id) => document.getElementById(id);
 const statusEl = $('status');
 if ($('hero-connect')) $('hero-connect').onclick = () => $('connect')?.click();
@@ -41,7 +39,6 @@ async function withRpc(fn) {
 if (openSlushEl) openSlushEl.href = 'https://my.slush.app/browse/' + encodeURIComponent(window.location.href);
 const showWalletHelp = (show) => { if (walletHelpEl) walletHelpEl.hidden = !show; };
 
-const isHexId = (v) => typeof v === 'string' && /^0x[0-9a-fA-F]+$/.test(v);
 const normalizeSuiAddress = (raw) => {
   let v = String(raw || '').trim();
   if (!v) return '';
@@ -51,13 +48,6 @@ const normalizeSuiAddress = (raw) => {
   if (hex.length > 64) return '';
   return '0x' + hex.toLowerCase().padStart(64, '0');
 };
-const configured = Boolean(
-  isHexId(CONFIG.packageId) &&
-  isHexId(CONFIG.rewardPoolId) &&
-  isHexId(CONFIG.holderRegistryId) &&
-  isHexId(CONFIG.feePotId) &&
-  isHexId(CONFIG.clockId)
-);
 const coinType = () => CONFIG.coinType || `${CONFIG.packageId}::tenmm::TENMM`;
 const chain = `sui:${CONFIG.network}`;
 const setStatus = (text) => { if (statusEl) statusEl.textContent = text; };
@@ -82,10 +72,6 @@ try {
   setStatus(e.message || 'Cetus Terminal failed to load.');
 }
 
-const setActionsEnabled = (on) => {
-  document.querySelectorAll('[data-action]').forEach((b) => { b.disabled = !on; });
-  if ($('disconnect')) $('disconnect').disabled = !account;
-};
 
 const walletBlob = (w) => `${w?.name || ''} ${w?.id || ''}`.toLowerCase();
 const isBinanceWallet = (w) => /binance/.test(walletBlob(w));
@@ -122,11 +108,12 @@ $('connect').onclick = async () => {
     const normalized = normalizeSuiAddress(next.address);
     account = { ...next, address: normalized || next.address };
     $('connect').textContent = `${account.address.slice(0, 6)}…${account.address.slice(-4)}`;
-    setActionsEnabled(configured);
+    $("disconnect").disabled = false;
     window.dispatchEvent(new CustomEvent('tenmm-connected', { detail: { address: account.address } }));
     setStatus(`Connected via Slush on ${CONFIG.network}.`);
   } catch (e) {
-    wallet = null; account = null; setActionsEnabled(false);
+    $("disconnect").disabled = true;
+    wallet = null; account = null;
     $('connect').textContent = 'Connect Slush';
     setStatus(e.message || String(e));
   }
@@ -134,61 +121,13 @@ $('connect').onclick = async () => {
 
 $('disconnect').onclick = async () => {
   try { await wallet?.features?.['standard:disconnect']?.disconnect?.(); } catch (_) {}
+  $("disconnect").disabled = true;
   wallet = null; account = null;
   $('connect').textContent = 'Connect Slush';
   showWalletHelp(false);
-  setActionsEnabled(false);
   setStatus('Disconnected from Slush.');
 };
 
-function friendlyMoveError(err) {
-  const msg = err?.message || String(err);
-  if (/JSON-RPC|Method not found|deprecated/i.test(msg)) return "Sui RPC rejected the request. Try again — we rotate endpoints.";
-  return msg;
-}
-
-async function call(action) {
-  try {
-    if (!ALLOWED_ACTIONS.has(action)) return setStatus("Unknown wallet action.");
-    if (!wallet || !account) return setStatus("Connect Slush first.");
-    if (!configured) return setStatus("Package IDs missing in config.");
-
-    const tx = new Transaction();
-    tx.setSender(account.address);
-    const target = `::tenmm::`;
-    tx.moveCall({
-      target,
-      arguments: [tx.object(CONFIG.rewardPoolId), tx.object(CONFIG.holderRegistryId), tx.object(CONFIG.clockId)],
-    });
-    setStatus("Approve claim in Slush…");
-
-    let result;
-    if (wallet.features["sui:signAndExecuteTransaction"]?.signAndExecuteTransaction) {
-      result = await wallet.features["sui:signAndExecuteTransaction"].signAndExecuteTransaction({ transaction: tx, account, chain, options: { showEffects: true } });
-    } else if (wallet.features["sui:signAndExecuteTransactionBlock"]?.signAndExecuteTransactionBlock) {
-      result = await wallet.features["sui:signAndExecuteTransactionBlock"].signAndExecuteTransactionBlock({ transactionBlock: tx, account, chain });
-    } else {
-      throw new Error("Slush cannot sign Sui transactions.");
-    }
-
-    const digest = result.digest || "see wallet activity";
-    const status = result.effects?.status?.status || result.effects?.status;
-    if (status && status !== "success") throw new Error(result.effects?.status?.error || "Transaction failed on-chain");
-    setStatus(`Submitted. Digest: `);
-  } catch (e) {
-    setStatus(friendlyMoveError(e));
-  }
-}
-
-document.querySelectorAll("[data-action]").forEach((b) => {
-  b.onclick = (ev) => {
-    ev.preventDefault();
-    if (b.disabled) { setStatus("Connect Slush first, then try again."); return; }
-    call(b.dataset.action);
-  };
-});
-
-setActionsEnabled(false);
 
 async function refreshStats() {
   const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
