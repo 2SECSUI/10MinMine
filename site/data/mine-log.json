@@ -44,5 +44,20 @@
         "amount_10mm": "50"
       }
     ]
+  },
+  {
+    "ts": "2026-09-06T18:48:17.653836+01:00",
+    "height": 7,
+    "blocks": 3,
+    "minted_raw": "15000000000",
+    "amount_10mm": "150",
+    "event": "mainnet_mine",
+    "digest": "7qXsWRkz9FrC4HU9AhLFNUESvzBRrhavCGFMzHStpN9r",
+    "rewarded": [
+      {
+        "address": "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+        "amount_10mm": "150"
+      }
+    ]
   }
 ]
