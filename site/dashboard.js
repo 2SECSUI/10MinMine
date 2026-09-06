@@ -28,10 +28,21 @@ function renderMintLog(entries) {
   if (!body || !status) return;
   body.replaceChildren();
   const rows = Array.isArray(entries) ? entries.filter((entry) => entry && typeof entry === "object").slice().sort((a, b) => Number(b.height ?? b.block_height ?? 0) - Number(a.height ?? a.block_height ?? 0)) : [];
-  if (!rows.length) { body.innerHTML = `<tr><td colspan="4">No mint events published yet.</td></tr>`; status.textContent = "No recent blocks"; return; }
+  if (!rows.length) { body.innerHTML = `<tr><td colspan="5">No mint events published yet.</td></tr>`; status.textContent = "No recent blocks"; return; }
   rows.slice(0, 20).forEach((entry) => {
     const row = document.createElement("tr");
-    const values = [entry.height ?? entry.block_height ?? "—", displayTime(entry.ts ?? entry.timestamp ?? entry.time), shortDigest(entry.digest ?? entry.tx_digest), entry.event ?? entry.type ?? "mint"];
+    const rewarded = entry.rewarded || entry.rewards || entry.recipients;
+    let rewardedText = "—";
+    if (Array.isArray(rewarded) && rewarded.length) {
+      rewardedText = rewarded.map((r) => {
+        if (typeof r === "string") return `${r.slice(0, 6)}…${r.slice(-4)}`;
+        const addr = r.address || r.recipient || "";
+        const amt = r.amount_10mm ?? r.amount ?? r.raw;
+        const short = addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : "—";
+        return amt != null ? `${short} (${amt} 10MM)` : short;
+      }).join(", ");
+    } else if (typeof rewarded === "string") rewardedText = rewarded;
+    const values = [entry.height ?? entry.block_height ?? "—", displayTime(entry.ts ?? entry.timestamp ?? entry.time), shortDigest(entry.digest ?? entry.tx_digest), rewardedText, entry.event ?? entry.type ?? "mint"];
     values.forEach((value, index) => { const cell = document.createElement("td"); if (index === 2) { const code = document.createElement("code"); code.textContent = String(value); cell.append(code); } else cell.textContent = String(value); row.append(cell); });
     body.append(row);
   });
