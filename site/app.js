@@ -7,8 +7,16 @@
   const $ = (id) => document.getElementById(id);
   const statusEl = $('status');
   $("hero-connect").onclick = () => $("connect").click();
+  const walletStore = getWallets();
+  const walletHelpEl = document.getElementById('wallet-help');
+  const openSlushEl = document.getElementById('open-slush');
   let wallet = null;
   let account = null;
+  let availableWallet = null;
+
+  const slushBrowseUrl = () => 'https://my.slush.app/browse/' + encodeURIComponent(window.location.href);
+  if (openSlushEl) openSlushEl.href = slushBrowseUrl();
+  const showWalletHelp = (show) => { if (walletHelpEl) walletHelpEl.hidden = !show; };
 
   const isHexId = (v) => typeof v === 'string' && /^0x[0-9a-fA-F]+$/.test(v);
   const configured = Boolean(
@@ -37,33 +45,80 @@
     $('disconnect').disabled = !account;
   };
 
-  function pickWallet() {
-    const wallets = getWallets().get().filter((w) =>
+  function walletBlob(w) {
+    return `${w?.name || ''} ${w?.id || ''}`.toLowerCase();
+  }
+
+  function isBinanceWallet(w) {
+    return /binance/.test(walletBlob(w));
+  }
+
+  function isSlushWallet(w) {
+    const blob = walletBlob(w);
+    if (isBinanceWallet(w)) return false;
+    // Slush (formerly Mysten / Sui Wallet)
+    return /slush|mysten|\bsui wallet\b/.test(blob);
+  }
+
+  function listSuiWallets() {
+    return walletStore.get().filter((w) =>
       Array.isArray(w.chains) && w.chains.includes(chain) &&
       w.features?.['standard:connect'] &&
-      w.features?.['sui:signAndExecuteTransaction']
+      (w.features?.['sui:signAndExecuteTransaction'] || w.features?.['sui:signAndExecuteTransactionBlock'])
     );
-    return wallets[0] || null;
   }
+
+  function pickWallet() {
+    // Only Slush — never auto-pick Binance or other Wallet Standard wallets.
+    const slush = listSuiWallets().find(isSlushWallet) || null;
+    availableWallet = slush;
+    return slush;
+  }
+
+  // Wallets can register after page load, especially in a mobile wallet browser.
+  const refreshWallets = () => {
+    const next = pickWallet();
+    if (next && !wallet && walletHelpEl && !walletHelpEl.hidden) {
+      showWalletHelp(false);
+      setStatus('Slush detected. Tap Connect Slush to continue.');
+    }
+    return next;
+  };
+  walletStore.on('register', refreshWallets);
+  walletStore.on('unregister', refreshWallets);
+  refreshWallets();
 
   $('connect').onclick = async () => {
     try {
-      if (!['testnet', 'mainnet', 'devnet', 'localnet'].includes(CONFIG.network)) {
-        throw new Error('Invalid network in config.js');
+      if (CONFIG.network !== 'mainnet') {
+        throw new Error('10MinMine is configured for Sui mainnet only.');
       }
+      const detected = listSuiWallets().map((w) => w.name || w.id || 'unknown');
       wallet = pickWallet();
-      if (!wallet) throw new Error(`No Sui wallet found for ${chain}. Install Slush (or another Wallet Standard wallet) for that network.`);
+      if (!wallet) {
+        showWalletHelp(true);
+        const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+        const found = detected.length
+          ? `Detected: ${detected.join(', ')}.`
+          : 'No Wallet Standard wallets detected.';
+        throw new Error(
+          mobile
+            ? `${found} This site only connects to Slush (not Binance). Open the page inside the Slush app browser, then tap Connect Slush.`
+            : `${found} This site only connects to Slush (not Binance). Install/unlock the Slush extension, then click Connect Slush.`
+        );
+      }
+      showWalletHelp(false);
       const result = await wallet.features['standard:connect'].connect();
       account = result.accounts?.find((a) => !a.chains || a.chains.includes(chain)) || result.accounts?.[0];
       if (!account?.address || !/^0x[0-9a-fA-F]+$/.test(account.address)) throw new Error('Wallet did not return a valid account.');
       $('connect').textContent = `${account.address.slice(0, 6)}…${account.address.slice(-4)}`;
       setActionsEnabled(configured); window.dispatchEvent(new CustomEvent('tenmm-connected', { detail: { address: account.address } }));
       setStatus(configured
-        ? `Connected on ${CONFIG.network}. Approve each action in your wallet popup.`
-        : `Connected on ${CONFIG.network}. Package IDs still blank — trading disabled until configured.`);
+        ? `Connected via Slush on ${CONFIG.network}. Approve each action in the Slush popup.`
+        : `Connected via Slush on ${CONFIG.network}. Package IDs still blank — trading disabled until configured.`);
     } catch (e) {
       wallet = null; account = null; setActionsEnabled(false);
-      $('connect').textContent = 'Connect Sui wallet';
+      $('connect').textContent = 'Connect Slush';
       setStatus(e.message || String(e));
     }
   };
@@ -74,9 +129,10 @@
       if (disc) await disc.disconnect();
     } catch (_) { /* ignore */ }
     wallet = null; account = null;
-    $('connect').textContent = 'Connect Sui wallet';
+    $('connect').textContent = 'Connect Slush';
+    showWalletHelp(false);
     setActionsEnabled(false);
-    setStatus('Disconnected. Keys never left your wallet extension.');
+    setStatus('Disconnected from Slush. Keys never left your wallet.');
   };
 
   async function splitTenmmPayment(tx, amount) {
@@ -105,9 +161,10 @@
         window.open(cetusSellUrl, '_blank', 'noopener,noreferrer');
         return setStatus('Opened Cetus to sell 10MM for SUI. Complete the swap in the Cetus dapp.');
       }
-      if (!wallet || !account) return setStatus('Connect a wallet first.');
+      if (!wallet || !account) return setStatus('Connect Slush first.');
       if (!configured) return setStatus('Configure verified package/object IDs in site/config.js first.');
-      if (!wallet.features['sui:signAndExecuteTransaction']) return setStatus('Wallet cannot sign Sui transactions.');
+      const signFeat = wallet.features['sui:signAndExecuteTransaction'] || wallet.features['sui:signAndExecuteTransactionBlock'];
+      if (!signFeat) return setStatus('Slush cannot sign Sui transactions.');
 
       const tx = new Transaction();
       const targetAction = action === "transfer" ? "protocol_transfer" : action;
