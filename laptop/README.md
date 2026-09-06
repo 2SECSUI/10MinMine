@@ -22,3 +22,13 @@ Each successful mine:
 X batch images every 20 blocks still run on the bot (optional).
 
 Bot posts a 12-hour block/reward list to @TenMinMine (not from this laptop script).
+
+## Auto-register holders (official Send)
+`register_untracked.ps1` runs before each mine:
+1. Reads `register_watchlist.txt` (and GraphQL coin owners when available)
+2. Skips wallets already in the on-chain holder registry / pools
+3. Official `protocol_transfer` from ops tracked principal (default `REGISTER_10MM=1`, or amount after comma in the watchlist)
+
+Cetus/Turbos buys alone do **not** register. Only this path / site Send / mine does.
+
+Mint log then shows each registered holder’s share (you get less; they get some).

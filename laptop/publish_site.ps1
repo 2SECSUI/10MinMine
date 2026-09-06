@@ -43,7 +43,86 @@ if ($Digest) {
   }
 }
 
+function Normalize-Addr([string]$a) {
+  $v = ($a -replace '\s','').ToLower()
+  if (-not $v) { return "" }
+  if (-not $v.StartsWith("0x")) { $v = "0x" + $v }
+  $hex = $v.Substring(2)
+  if ($hex.Length -gt 64) { return "" }
+  return ("0x" + $hex.PadLeft(64, "0"))
+}
+
+function Get-RewardSplit([double]$totalAmount, [string]$digest) {
+  $coinType = "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM"
+  $rpc = if ($env:SUI_RPC) { $env:SUI_RPC } else { "https://sui-mainnet-endpoint.blockvision.org" }
+  $rows = @()
+
+  # 1) Prefer on-chain balanceChanges from the mine digest (exact payouts)
+  if ($digest) {
+    try {
+      $body = @{ jsonrpc = "2.0"; id = 1; method = "sui_getTransactionBlock"; params = @($digest, @{ showBalanceChanges = $true; showEffects = $true }) } | ConvertTo-Json -Depth 8 -Compress
+      $resp = Invoke-RestMethod -Uri $rpc -Method Post -ContentType "application/json" -Body $body -TimeoutSec 40
+      $changes = @($resp.result.balanceChanges)
+      foreach ($c in $changes) {
+        if ($c.coinType -ne $coinType) { continue }
+        $amtRaw = [int64]$c.amount
+        if ($amtRaw -le 0) { continue }
+        $owner = $null
+        if ($c.owner.AddressOwner) { $owner = Normalize-Addr ([string]$c.owner.AddressOwner) }
+        elseif ($c.owner -is [string]) { $owner = Normalize-Addr $c.owner }
+        if (-not $owner) { continue }
+        $rows += [pscustomobject]@{ address = $owner; amount_10mm = ([string]([math]::Round($amtRaw / 100000000.0, 8))) }
+      }
+    } catch {
+      Write-Host ("balanceChanges lookup failed: " + $_)
+    }
+  }
+
+  # 2) Fallback: split by registry principal shares
+  if (-not $rows.Count) {
+    try {
+      $body = @{ jsonrpc = "2.0"; id = 1; method = "sui_getObject"; params = @("0x5c637f112680491744d2513484b78ca8c64c334dc9d4a3a6233c8f92dbd970e9", @{ showContent = $true }) } | ConvertTo-Json -Depth 8 -Compress
+      $resp = Invoke-RestMethod -Uri $rpc -Method Post -ContentType "application/json" -Body $body -TimeoutSec 40
+      $fields = $resp.result.data.content.fields
+      $addrs = @($fields.addresses)
+      $totalP = [int64]$fields.total_principal
+      $tableId = $fields.holders.fields.id.id
+      if ($totalP -gt 0 -and $addrs.Count -gt 0) {
+        $rawTotal = [int64]([math]::Round($totalAmount * 100000000))
+        $allocated = [int64]0
+        for ($i = 0; $i -lt $addrs.Count; $i++) {
+          $a = Normalize-Addr ([string]$addrs[$i])
+          $dynBody = @{ jsonrpc = "2.0"; id = 1; method = "suix_getDynamicFieldObject"; params = @($tableId, @{ type = "address"; value = $a }) } | ConvertTo-Json -Depth 8 -Compress
+          $dyn = Invoke-RestMethod -Uri $rpc -Method Post -ContentType "application/json" -Body $dynBody -TimeoutSec 40
+          $prin = [int64]$dyn.result.data.content.fields.value.fields.principal
+          if ($i -eq ($addrs.Count - 1)) {
+            $shareRaw = $rawTotal - $allocated
+          } else {
+            $shareRaw = [int64](($rawTotal * $prin) / $totalP)
+            $allocated += $shareRaw
+          }
+          if ($shareRaw -le 0) { continue }
+          $rows += [pscustomobject]@{ address = $a; amount_10mm = ([string]([math]::Round($shareRaw / 100000000.0, 8))); principal_10mm = ([string]([math]::Round($prin / 100000000.0, 8))) }
+        }
+      }
+    } catch {
+      Write-Host ("registry split failed: " + $_)
+    }
+  }
+
+  if (-not $rows.Count) {
+    $rows = @([pscustomobject]@{ address = $OPS_ADDR; amount_10mm = ([string]$totalAmount) })
+  }
+  return $rows
+}
+
 if (-not $exists) {
+  $rewarded = @(Get-RewardSplit -totalAmount ([double]$Amount) -digest $Digest)
+  $note = if ($rewarded.Count -gt 1) {
+    "Split across " + $rewarded.Count + " registered holders by principal"
+  } else {
+    "50 10MM per block"
+  }
   $entry = [pscustomobject]@{
     ts = (Get-Date).ToString("yyyy-MM-ddTHH:mm:ss.ffffffzzz")
     height = $Height
@@ -52,8 +131,8 @@ if (-not $exists) {
     amount_10mm = ([string]$Amount)
     event = "mainnet_mine"
     digest = $Digest
-    rewarded = @([pscustomobject]@{ address = $OPS_ADDR; amount_10mm = ([string]$Amount) })
-    note = "50 10MM per block"
+    rewarded = $rewarded
+    note = $note
   }
   $log = @($log) + @($entry)
 }
@@ -74,7 +153,7 @@ $status = [pscustomobject]@{
   total_minted_10mm = $totalS
   current_subsidy_10mm = "50"
   block_reward_note = "50 10MM / block (then halvings)"
-  holders = "Hold-to-earn registry live"
+  holders = $(try { $rpcH = if ($env:SUI_RPC) { $env:SUI_RPC } else { "https://sui-mainnet-endpoint.blockvision.org" }; $bh = @{ jsonrpc = "2.0"; id = 1; method = "sui_getObject"; params = @("0x5c637f112680491744d2513484b78ca8c64c334dc9d4a3a6233c8f92dbd970e9", @{ showContent = $true }) } | ConvertTo-Json -Depth 8 -Compress; $rh = Invoke-RestMethod -Uri $rpcH -Method Post -ContentType "application/json" -Body $bh -TimeoutSec 20; $nh = @($rh.result.data.content.fields.addresses).Count; if ($nh -gt 0) { "$nh registered" } else { "Hold-to-earn registry live" } } catch { "Hold-to-earn registry live" })
   price_note = "Trade on Cetus 10MM/SUI"
   fee_pot_note = "0.01 SUI tip / mine when funded"
   hold_slot_note = "Rewards each ~10m block - see countdown"

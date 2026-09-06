@@ -34,6 +34,13 @@ $mB = [regex]::Match($rawBefore, "block_height\D+(\d+)")
 if ($mB.Success) { $heightBefore = $mB.Groups[1].Value }
 Remove-Item -LiteralPath $tmpBefore -ErrorAction SilentlyContinue
 
+# Auto-register untracked holders (watchlist + coin owners) before mining so they share this block
+$regScript = Join-Path $here "register_untracked.ps1"
+if (Test-Path $regScript) {
+  Write-Host "register_untracked: scanning / registering ..."
+  try { & $regScript } catch { Write-Host ("register_untracked warning: " + $_) }
+}
+
 Write-Host "calling tenmm::mine ..."
 $out = & sui client call --package $PACKAGE_ID --module tenmm --function mine --args $REWARD_POOL_ID $HOLDER_REGISTRY_ID $FEE_POT_ID $CLOCK_ID --gas-budget $GAS_BUDGET 2>&1 | Out-String
 Write-Host $out
