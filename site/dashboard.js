@@ -47,7 +47,7 @@ async function loadAftermathFarm() {
     const rate = pick(fields.emission_rates); const frequency = Number(pick(fields.emission_frequencies_ms)); const emitted = pick(fields.total_rewards_emitted); const remaining = pick(fields.total_rewards_remaining); const staked = pick(fields.total_staked_amount);
     const minutes = Number.isFinite(frequency) && frequency > 0 ? Math.round(frequency / 60000) : 10;
     set("aftermath-tvl", fmt(staked, 8) + " 10MM");
-    set("aftermath-reward-rate", "~45.7 10MM / " + minutes + " min · 98% of ops mine share");
+    set("aftermath-reward-rate", "0.00004185 10MM / " + minutes + " min initial · 98% top-ups");
     set("aftermath-rewards", fmt(emitted, 8) + " paid · " + fmt(remaining, 8) + " remaining");
     set("stat-farm", fmt(staked, 8) + " 10MM");
     set("aftermath-farm-status", "Live farm · " + fmt(rate, 8) + " configured now · 98% top-ups until height 210000");

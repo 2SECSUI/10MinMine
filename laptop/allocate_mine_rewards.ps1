@@ -13,7 +13,7 @@ param(
 $ErrorActionPreference = "Continue"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $HALVING_HEIGHT = 210000
-$AF_FARM = "0x89a692f70e2b831d1d6a1ec299f571ba2032c94df4fe8ed8dde2ef9b711df035"
+$AF_FARM = "0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7"
 $CETUS_MAIN_POOL = "0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2"
 $CETUS_POSITION_ID = "0x885c09217753a405d987d0604ba4c78f4c34510576a478f803bf4ace91a10546"
 $OPS = "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a"

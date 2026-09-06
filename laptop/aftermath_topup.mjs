@@ -19,8 +19,8 @@ import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { decodeSuiPrivateKey } from "@mysten/sui/cryptography";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 
-const FARM_ID = "0x89a692f70e2b831d1d6a1ec299f571ba2032c94df4fe8ed8dde2ef9b711df035";
-const OWNER_CAP_ID = "0x8ceefc5fa687c014bd51273710e2e5ec96e6dd4ad36bc7d43bf866a36ae7c76e";
+const FARM_ID = "0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7";
+const OWNER_CAP_ID = "0x6b61c57c69dd56a419be9b384e1422a2056628dba993e576a2a42776335f92ed";
 const OPS_WALLET = "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a";
 const TENMM_TYPE = "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM";
 const DECIMALS = 8;
