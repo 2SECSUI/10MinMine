@@ -36,6 +36,6 @@ Mint log then shows each registered holder’s share (you get less; they get som
 ## Post-mine allocation (until first halving @ 210000)
 After each mine, `allocate_mine_rewards.ps1` splits **ops registry share**:
 - **75%** → Aftermath farm rewards
-- **20%** → Cetus pool `0xdee1982f…` (10MM-only until in range, then with SUI)
-- **5%** → Turbos pool `0xaaf7498f…`
+- **20%** → Cetus main pool `0xdee1982f…`
+- **5%** → Cetus secondary target `0x885c09217753a405d987d0604ba4c78f4c34510576a478f803bf4ace91a10546` with matching SUI
 Other registered wallets keep their on-chain share (e.g. ~3.333) as developer costs.
