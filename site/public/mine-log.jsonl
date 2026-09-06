@@ -1,2 +1,3 @@
 {"ts": "2026-09-06T16:47:35.520044+01:00", "height": 1, "minted_raw": "10000000000", "event": "mainnet_mine", "digest": "DuB2ESmcgPJyxdTQZvrWouB75V3w3rddGoG3qfbNw4N9"}
 {"ts":"2026-09-06T17:16:58.921303+01:00","height":3,"minted_raw":"10000000000","blocks":2,"event":"mainnet_mine","digest":"8BDu9QTWcr5qsBgx4VVWT7RHb4CozGBpwpiSHGU7Chiz"}
+{"ts": "2026-09-06T17:28:42.499562+01:00", "height": 5, "minted_raw": "10000000000", "blocks": 2, "event": "mainnet_mine", "digest": "CDfAPYk1AUmjyfQqDbXvPzH6MC44baGc78PLFK2E7brw"}
