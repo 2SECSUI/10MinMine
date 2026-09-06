@@ -10,7 +10,7 @@ sui client switch --env mainnet
 ## Run
 ```powershell
 .\mine_if_owed.ps1        # one try if a block is owed
-.\mine_loop_12m.ps1       # every 12m
+.\mine_loop_10m.ps1       # every 10m
 ```
 
 Each successful mine:
