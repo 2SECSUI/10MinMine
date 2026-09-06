@@ -608,23 +608,14 @@
         <div id="dexscreener-embed">
           <iframe
             title="10MM / SUI DexScreener chart"
-            src="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2?embed=1&amp;loadChartSettings=0&amp;info=0&amp;chartLeftToolbar=0&amp;chartDefaultOnMobile=1&amp;chartTheme=dark&amp;theme=dark&amp;chartStyle=0&amp;chartType=usd&amp;interval=15"
-            loading="lazy"
+            src="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2?embed=1&amp;loadChartSettings=0&amp;trades=0&amp;info=0&amp;chartLeftToolbar=0&amp;chartDefaultOnMobile=1&amp;chartTheme=dark&amp;theme=dark&amp;chartStyle=0&amp;chartType=usd&amp;interval=15"
+            referrerpolicy="origin-when-cross-origin"
             allow="clipboard-write"
             allowfullscreen
           ></iframe>
         </div>
       </div>
-      <aside class="cetus-side-card" aria-label="Cetus buy and sell">
-        <div class="eyebrow">CETUS DAPP</div>
-        <h3>Buy &amp; sell 10MM</h3>
-        <p>Opens Cetus with the live 10MM/SUI pool preselected. Check price impact — liquidity is still thin.</p>
-        <div class="cetus-trade-btns">
-          <a class="buy" id="cetus-buy-link" href="https://app.cetus.zone/swap?from=0x2%3A%3Asui%3A%3ASUI&amp;to=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&amp;poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">Buy 10MM on Cetus</a>
-          <a class="sell" id="cetus-sell-link" href="https://app.cetus.zone/swap?from=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&amp;to=0x2%3A%3Asui%3A%3ASUI&amp;poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">Sell 10MM on Cetus</a>
-          <a id="pool-lp-side-link" href="https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be" target="_blank" rel="noopener noreferrer" style="min-height:40px;border:1px solid #334155;color:#e5e7eb;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;text-decoration:none">Add LP</a>
-        </div>
-        <p class="side-note">LPs can earn swap fees by providing liquidity in the Cetus 10MM/SUI pool. Stake 10MM on Aftermath separately for mine-funded rewards.</p>
+      <aside class="cetus-side-card" aria-label="Cetus swap">
         <div class="cetus-terminal-shell" aria-label="Cetus swap terminal"><div id="cetus-terminal"></div></div>
       </aside>
 
@@ -634,7 +625,7 @@
     </div>
     <div id="feePreview" class="fee-preview">Swaps use Cetus pool fees — review price impact on Cetus before confirming.</div>
     <p class="swap-disclaimer"><strong>Swap note:</strong> Cetus swaps use the 10MM/SUI pool and LP fees go to liquidity providers. Wallet or DEX holdings do not earn mine-funded rewards until staked on Aftermath.</p>
-    <div class="swap-fallbacks" aria-label="Cetus embedded terminal note"><span>Use the embedded Cetus swap card beside the chart, or open Buy/Sell on Cetus.</span></div>
+    <div class="swap-fallbacks" aria-label="Cetus embedded terminal note"><span>Use the embedded Cetus swap card beside the chart.</span></div>
     <div id="status" class="status">Cetus Terminal is loading. Connect Slush here for legacy claims. Stake on Aftermath for mine-funded rewards.</div>
     <div id="wallet-help" class="wallet-help" role="alert" hidden>
       <strong>Mobile wallet connection</strong>
