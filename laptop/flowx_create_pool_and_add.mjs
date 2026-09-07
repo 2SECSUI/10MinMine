@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 import { SuiClient } from "@mysten/sui/client";
 import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { decodeSuiPrivateKey } from "@mysten/sui/cryptography";
@@ -82,7 +83,7 @@ function signerForWallet() {
 function totalBalance(balance) { return BigInt(balance?.totalBalance ?? balance?.balance?.balance ?? balance?.balance?.addressBalance ?? 0); }
 function extractTx(result) { return result.Transaction ?? result.FailedTransaction ?? result; }
 function writeArtifact(details, bytes) {
-  const file = path.join(path.dirname(new URL(import.meta.url).pathname), `flowx_create_pool_${Date.now()}.json`);
+  const file = path.join(path.dirname(fileURLToPath(import.meta.url)), `flowx_create_pool_${Date.now()}.json`);
   fs.writeFileSync(file, JSON.stringify({ ...details, txBytesBase64: Buffer.from(bytes).toString("base64") }, null, 2) + "\n");
   return file;
 }
