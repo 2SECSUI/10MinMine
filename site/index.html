@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh https://archive.cetus.zone https://dexscreener.com https://*.dexscreener.com; connect-src 'self' https://esm.sh https://fullnode.testnet.sui.io https://fullnode.mainnet.sui.io https://mainnet.suiet.app https://rpc-mainnet.suiscan.xyz https://*.suiscan.xyz https://sui-mainnet-endpoint.blockvision.org https://*.blockvision.org https://*.sui.io wss://*.sui.io https://cetus.zone https://*.cetus.zone wss://cetus.zone wss://*.cetus.zone https://dexscreener.com https://*.dexscreener.com https://api.dexscreener.com; img-src 'self' data: https://raw.githubusercontent.com https://github.com https://cetus.zone https://*.cetus.zone https://dexscreener.com https://*.dexscreener.com; font-src 'self' data: https://cetus.zone https://*.cetus.zone https://dexscreener.com https://*.dexscreener.com; style-src 'self' 'unsafe-inline' https://archive.cetus.zone https://dexscreener.com https://*.dexscreener.com; frame-src https://dexscreener.com https://*.dexscreener.com; object-src 'none'; base-uri 'self'; form-action 'none'" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://esm.sh https://archive.cetus.zone https://dexscreener.com https://*.dexscreener.com; connect-src 'self' https://esm.sh https://fullnode.testnet.sui.io https://fullnode.mainnet.sui.io https://mainnet.suiet.app https://rpc-mainnet.suiscan.xyz https://*.suiscan.xyz https://sui-mainnet-endpoint.blockvision.org https://*.blockvision.org https://*.sui.io wss://*.sui.io https://cetus.zone https://*.cetus.zone wss://cetus.zone wss://*.cetus.zone https://dexscreener.com https://*.dexscreener.com https://api.dexscreener.com; img-src 'self' data: https://raw.githubusercontent.com https://github.com https://cetus.zone https://*.cetus.zone https://dexscreener.com https://*.dexscreener.com; font-src 'self' data: https://cetus.zone https://*.cetus.zone https://dexscreener.com https://*.dexscreener.com; style-src 'self' 'unsafe-inline' https://archive.cetus.zone https://dexscreener.com https://*.dexscreener.com; frame-src https://dexscreener.com https://*.dexscreener.com https://aftermath.finance https://*.aftermath.finance https://app.cetus.zone https://*.cetus.zone; object-src 'none'; base-uri 'self'; form-action 'none'" />
   <meta name="referrer" content="no-referrer" />
   <title>10MinMine · 10MM</title>
     <style>
@@ -375,6 +375,63 @@
     .farm-stat-row strong { color: #fff; text-align: right; }
     .farm-stat-note { margin: 12px 0 8px !important; font-size: .75rem !important; }
     .farm-stat-link { color: #fdba74; font-weight: 750; font-size: .82rem; }
+
+    .social-pills { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .social-pill {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 12px; border-radius:999px; font-size:.78rem; font-weight:750;
+      text-decoration:none; border:1px solid #334155; background:#0b1220; color:#e2e8f0;
+    }
+    .social-pill:hover { border-color:#f7931a; color:#fff; }
+    .social-pill.tg { background:linear-gradient(135deg,#0ea5e9,#0284c7); border-color:transparent; color:#fff; }
+    .social-pill.x { background:#111827; border-color:#374151; }
+    .farm-stat-card {
+      position:relative; overflow:hidden;
+      padding:18px !important; border-radius:16px !important;
+      border:1px solid transparent !important;
+      background:
+        linear-gradient(#0d131c,#0d131c) padding-box,
+        linear-gradient(135deg,#f7931a,#7c3aed,#22d3ee) border-box !important;
+      box-shadow:0 12px 40px rgba(0,0,0,.35);
+    }
+    .farm-stat-card::before {
+      content:""; position:absolute; inset:-40% auto auto -20%; width:180px; height:180px;
+      background:radial-gradient(circle,rgba(247,147,26,.22),transparent 70%); pointer-events:none;
+    }
+    .cetus-stat::before { background:radial-gradient(circle,rgba(34,211,238,.2),transparent 70%); }
+    .farm-card-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; position:relative; z-index:1; }
+    .farm-badge { font-size:.65rem; font-weight:800; letter-spacing:.06em; padding:4px 8px; border-radius:999px; background:#1e293b; color:#fdba74; }
+    .cetus-stat .farm-badge { color:#67e8f9; }
+    .farm-stat-value { font-size:1.55rem !important; margin-top:6px; position:relative; z-index:1; }
+    .farm-progress { margin-top:12px; height:8px; border-radius:999px; background:#1e293b; overflow:hidden; }
+    .farm-progress > span { display:block; height:100%; width:0%; background:linear-gradient(90deg,#f7931a,#fb923c); transition:width .6s ease; }
+    .cetus-stat .farm-progress > span { background:linear-gradient(90deg,#06b6d4,#22d3ee); }
+    .farm-card-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; position:relative; z-index:1; }
+    .farm-card-actions a, .farm-card-actions button {
+      appearance:none; border:0; cursor:pointer; text-decoration:none;
+      padding:9px 12px; border-radius:10px; font-weight:750; font-size:.8rem;
+      background:#f7931a; color:#111;
+    }
+    .farm-card-actions a.secondary, .farm-card-actions button.secondary {
+      background:#1e293b; color:#e2e8f0; border:1px solid #334155;
+    }
+    .onpage-panels { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+    @media (max-width:860px){ .onpage-panels { grid-template-columns:1fr; } }
+    .onpage-panel {
+      border:1px solid #7c3a10; border-radius:14px; background:#0b1220; padding:14px;
+    }
+    .onpage-panel h3 { margin:0 0 8px; color:#fff; font-size:1rem; }
+    .onpage-panel p { margin:0 0 10px; color:#9aa4b2; font-size:.85rem; }
+    .stake-embed-note { font-size:.75rem; color:#94a3b8; margin-top:8px; }
+    .community-strip {
+      display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between;
+      margin:16px 0 0; padding:14px 16px; border-radius:14px;
+      background:linear-gradient(120deg,#0f172a,#1e293b); border:1px solid #334155;
+    }
+    .community-strip h3 { margin:0; color:#fff; font-size:1rem; }
+    .community-strip p { margin:4px 0 0; color:#94a3b8; font-size:.82rem; }
+    footer .footer-socials { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+
     .stake-farm .farm-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
     .stake-farm .farm-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 13px; border-radius: 5px; border: 1px solid #475569; color: #fff; background: #182131; font-weight: 750; text-decoration: none; }
     .stake-farm .farm-actions a.primary { color: #111827; border-color: var(--accent); background: var(--accent); }
@@ -494,9 +551,13 @@
       <span><strong>10MinMine</strong><span>Ticker 10MM · Sui mainnet</span></span>
     </a>
     <nav class="top-nav" aria-label="Primary">
-      <a href="#live-board">Live</a><a href="#dashboard">Dashboard</a><a href="#mine">Mine</a><a href="#get-10mm">Get 10MM</a><a href="#stake-farm">Stake &amp; earn</a><a href="#terms">Terms</a>
+      <a href="#live-board">Live</a><a href="#dashboard">Dashboard</a><a href="#mine">Mine</a><a href="#get-10mm">Get 10MM</a><a href="#stake-farm">Stake &amp; earn</a><a href="#community">Community</a><a href="#terms">Terms</a>
     </nav>
     <div class="header-actions">
+      <div class="social-pills" aria-label="Social links">
+        <a class="social-pill tg" href="https://t.me/myirishmoneyclock" target="_blank" rel="noopener noreferrer">Telegram</a>
+        <a class="social-pill x" href="https://x.com/TenMinMine" target="_blank" rel="noopener noreferrer">X</a>
+      </div>
       <button id="connect" type="button">Connect Slush</button>
       <button id="disconnect" class="secondary" type="button" disabled>Disconnect</button>
     </div>
@@ -556,14 +617,72 @@
   </section>
 
   <section class="panel stake-farm" id="stake-farm">
-    <div class="eyebrow">PRIMARY REWARD PATH · LIVE FARM + LP STATS</div>
-    <div class="farm-intro"><h2>Stake on Aftermath for mine rewards · provide Cetus LP for trading fees</h2><p>Buy 10MM on Cetus, stake it on Aftermath, and use the live pool cards below to see the current reward and liquidity picture. Bare wallet or DEX holdings do not earn mine rewards until staked.</p></div>
+    <div class="eyebrow">PRIMARY REWARD PATH · LIVE DAPP SNAPSHOTS</div>
+    <div class="farm-intro"><h2>Stake on Aftermath for mine rewards · trade on Cetus</h2><p>Live stats from the farm and pool stay on this page. Buy with the embedded Cetus Terminal below, then stake on Aftermath for mine-funded rewards. Bare wallet or DEX holdings do not earn until staked.</p></div>
     <p class="farm-stat-note">Each ~10-minute block mints 50 10MM until height 210000: about 3.33 goes to the maintenance wallet; of the ~46.67 ops share, 98% goes to Aftermath (~45.7), 1% to the Cetus LP with matching SUI, and 1% to a second Cetus LP position for extra liquidity. After halving, these amounts scale down.</p>
     <div class="farm-stats-grid">
-      <article class="farm-stat-card aftermath-stat"><div class="eyebrow">AFTERMATH FARM</div><h3>10MM stake TVL</h3><strong class="farm-stat-value" id="aftermath-tvl">Loading…</strong><div class="farm-stat-row"><span>Reward rate</span><strong id="aftermath-reward-rate">0.00004185 10MM / 10 min initial · 98% top-ups</strong></div><div class="farm-stat-row"><span>Paid / remaining</span><strong id="aftermath-rewards">0 paid · ~11 remaining</strong></div><p id="aftermath-farm-status" class="farm-stat-note">Live Sui farm · 98% top-ups until height 210000 · polling every 60s</p><a class="farm-stat-link" href="https://aftermath.finance/farms/0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7" target="_blank" rel="noopener noreferrer">Open Aftermath farm →</a></article>
-      <article class="farm-stat-card cetus-stat"><div class="eyebrow">CETUS 10MM/SUI POOL</div><h3>Liquidity / TVL</h3><strong class="farm-stat-value" id="cetus-stat-liquidity">Loading…</strong><div class="farm-stat-row"><span>TVL</span><strong id="cetus-stat-tvl">Loading…</strong></div><div class="farm-stat-row"><span>Price</span><strong id="cetus-stat-price">Loading…</strong></div><div class="farm-stat-row"><span>24h volume</span><strong id="cetus-stat-volume">Loading…</strong></div><p class="farm-stat-note">1% mine share → Cetus LP with matching SUI for main-pool liquidity. 1% → a second Cetus LP position for extra liquidity.</p><a class="farm-stat-link" href="https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be" target="_blank" rel="noopener noreferrer">Open Cetus position →</a></article>
+      <article class="farm-stat-card aftermath-stat">
+        <div class="farm-card-head"><div><div class="eyebrow">AFTERMATH</div><h3>Stake farm · live</h3></div><span class="farm-badge">MINE REWARDS</span></div>
+        <strong class="farm-stat-value" id="aftermath-tvl">Loading…</strong>
+        <div class="farm-stat-row"><span>Staked TVL</span><strong id="aftermath-tvl-sub">—</strong></div>
+        <div class="farm-stat-row"><span>Reward rate</span><strong id="aftermath-reward-rate">Loading…</strong></div>
+        <div class="farm-stat-row"><span>Paid / remaining</span><strong id="aftermath-rewards">Loading…</strong></div>
+        <div class="farm-stat-row"><span>Rewards left</span><strong id="aftermath-remaining-pct">—</strong></div>
+        <div class="farm-progress" aria-hidden="true"><span id="aftermath-progress-bar"></span></div>
+        <p id="aftermath-farm-status" class="farm-stat-note">Polling farm object every 60s</p>
+        <div class="farm-card-actions">
+          <a class="primary" id="aftermath-farm-link" href="https://aftermath.finance/farms/0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7" target="_blank" rel="noopener noreferrer">Stake on Aftermath</a>
+          <a class="secondary" href="#onpage-stake">Stake guide on-site</a>
+        </div>
+      </article>
+      <article class="farm-stat-card cetus-stat">
+        <div class="farm-card-head"><div><div class="eyebrow">CETUS</div><h3>10MM / SUI pool · live</h3></div><span class="farm-badge">TRADE + LP</span></div>
+        <strong class="farm-stat-value" id="cetus-stat-liquidity">Loading…</strong>
+        <div class="farm-stat-row"><span>TVL</span><strong id="cetus-stat-tvl">Loading…</strong></div>
+        <div class="farm-stat-row"><span>Price</span><strong id="cetus-stat-price">Loading…</strong></div>
+        <div class="farm-stat-row"><span>24h volume</span><strong id="cetus-stat-volume">Loading…</strong></div>
+        <div class="farm-stat-row"><span>24h change</span><strong id="cetus-stat-change">—</strong></div>
+        <div class="farm-stat-row"><span>24h txns</span><strong id="cetus-stat-txns">—</strong></div>
+        <div class="farm-progress" aria-hidden="true"><span id="cetus-progress-bar" style="width:55%"></span></div>
+        <p class="farm-stat-note">DexScreener snapshot · 1% mine share tops main LP · 1% second LP</p>
+        <div class="farm-card-actions">
+          <a href="#get-10mm">Buy on-site (Cetus)</a>
+          <a class="secondary" href="https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be" target="_blank" rel="noopener noreferrer">Open Cetus LP</a>
+          <a class="secondary" id="cetus-dex-link" href="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">DexScreener</a>
+        </div>
+      </article>
     </div>
-    <div class="farm-actions"><a class="primary" id="aftermath-farm-link" href="https://aftermath.finance/farms/0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7" target="_blank" rel="noopener noreferrer">Stake on Aftermath</a><a href="https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be" target="_blank" rel="noopener noreferrer">Open Cetus LP position</a></div>
+    <div class="onpage-panels">
+      <div class="onpage-panel" id="onpage-buy">
+        <h3>Buy 10MM without leaving</h3>
+        <p>Use the embedded Cetus Terminal in <a href="#get-10mm">Get 10MM</a>. Swaps hit the live 10MM/SUI pool; check price impact on thin liquidity.</p>
+        <div class="farm-card-actions"><a href="#get-10mm">Jump to Cetus Terminal</a></div>
+      </div>
+      <div class="onpage-panel" id="onpage-stake">
+        <h3>Stake for mine rewards</h3>
+        <p>1) Buy 10MM on Cetus. 2) Open the Aftermath farm with the button above. 3) Stake 10MM there. Rewards are topped up from ~98% of each mine’s ops share (~45.7 10MM / 10 min until the first halving).</p>
+        <p class="stake-embed-note">Aftermath does not offer a reliable in-page embed yet, so stake confirms in their farm UI. All live farm numbers stay on this page.</p>
+        <div class="farm-card-actions"><a id="aftermath-farm-link-2" href="https://aftermath.finance/farms/0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7" target="_blank" rel="noopener noreferrer">Open stake farm</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="community">
+    <div class="eyebrow">COMMUNITY</div>
+    <h2>Join 10MinMine</h2>
+    <p>Announcements, height updates, and mine chatter. Official links only — never seed phrases.</p>
+    <div class="community-strip">
+      <div>
+        <h3>Telegram + X</h3>
+        <p>Channel <strong>@myirishmoneyclock</strong> · X <strong>@TenMinMine</strong> · site + Suiscan below</p>
+      </div>
+      <div class="social-pills">
+        <a class="social-pill tg" href="https://t.me/myirishmoneyclock" target="_blank" rel="noopener noreferrer">Join Telegram</a>
+        <a class="social-pill x" href="https://x.com/TenMinMine" target="_blank" rel="noopener noreferrer">Follow on X</a>
+        <a class="social-pill" href="https://suiscan.xyz/mainnet/coin/0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM" target="_blank" rel="noopener noreferrer">Suiscan</a>
+        <a class="social-pill" href="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">DexScreener</a>
+      </div>
+    </div>
   </section>
 
   <section class="hero">
@@ -573,6 +692,8 @@
     <p class="lead"><strong>Stake on Aftermath for mine rewards. Provide Cetus LP for trading fees.</strong> Buy 10MM on Cetus, then stake it; connect a wallet when you need to check balances.</p>
     <div class="hero-actions">
       <button id="hero-connect" type="button">Connect Slush</button>
+      <a class="social-pill tg" href="https://t.me/myirishmoneyclock" target="_blank" rel="noopener noreferrer">Join Telegram</a>
+      <a class="social-pill x" href="https://x.com/TenMinMine" target="_blank" rel="noopener noreferrer">Follow @TenMinMine</a>
     </div>
     <div class="secure">Wallet Standard only. This page never asks for a seed phrase or private key. Every transaction opens your wallet for approval.</div>
   </section>
@@ -694,9 +815,17 @@
     </div>
   </section>
 
-  <footer>Official 10MinMine UI · buy / sell / stake · package IDs are configured per network · always verify you are on the official site before connecting.</footer>
+  <footer>
+    Official 10MinMine UI · buy / sell / stake · package IDs are configured per network · always verify you are on the official site before connecting.
+    <div class="footer-socials social-pills">
+      <a class="social-pill tg" href="https://t.me/myirishmoneyclock" target="_blank" rel="noopener noreferrer">Telegram</a>
+      <a class="social-pill x" href="https://x.com/TenMinMine" target="_blank" rel="noopener noreferrer">X @TenMinMine</a>
+      <a class="social-pill" href="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">DexScreener</a>
+      <a class="social-pill" href="https://suiscan.xyz/mainnet/coin/0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM" target="_blank" rel="noopener noreferrer">Suiscan</a>
+    </div>
+  </footer>
 </main>
 <link rel="stylesheet" href="https://archive.cetus.zone/assets/terminal/style-v2.css" />
 <script src="https://archive.cetus.zone/assets/terminal/main-v2.js"></script>
-<script type="module" src="app.js?v=chartbig2"></script>
-<script type="module" src="dashboard.js?v=chartbig2"></script>
+<script type="module" src="app.js?v=socials1"></script>
+<script type="module" src="dashboard.js?v=socials1"></script>

@@ -20,6 +20,10 @@ export const CONFIG = {
   cetusSellUrl: 'https://app.cetus.zone/swap?from=0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98%3A%3Atenmm%3A%3ATENMM&to=0x2%3A%3Asui%3A%3ASUI&poolAddress=0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
   coinType: '0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM',
   iconUrl: 'https://raw.githubusercontent.com/2SECSUI/10MinMine/main/site/public/10mmLogo.png',
+  telegramUrl: 'https://t.me/myirishmoneyclock',
+  twitterUrl: 'https://x.com/TenMinMine',
+  dexscreenerUrl: 'https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2',
+  suiscanCoinUrl: 'https://suiscan.xyz/mainnet/coin/0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM',
   explorer: {
     package: 'https://suiscan.xyz/mainnet/object/0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98',
     coin: 'https://suiscan.xyz/mainnet/coin/0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM',

@@ -27,6 +27,8 @@ async function loadPoolSnapshot() {
     liquidityBase: pair.liquidity && pair.liquidity.base,
     liquidityQuote: pair.liquidity && pair.liquidity.quote,
     volume24hUsd: pair.volume && pair.volume.h24,
+    priceChange24h: pair.priceChange && pair.priceChange.h24,
+    txns24h: pair.txns && pair.txns.h24 ? ((pair.txns.h24.buys || 0) + (pair.txns.h24.sells || 0)) : null,
     url: pair.url,
     fetchedAt: new Date().toISOString(),
   });
@@ -67,6 +69,11 @@ async function loadPoolSnapshot() {
   set("pool-price-sui", priceSui); set("pool-price-usd", priceUsd); set("pool-tvl", tvl); set("pool-volume", volume);
   set("board-pool-price", priceSui + " / " + priceUsd); set("board-pool-tvl", tvl); set("board-pool-volume", volume);
   set("cetus-stat-tvl", tvl); set("cetus-stat-price", priceSui + " / " + priceUsd); set("cetus-stat-volume", volume); set("cetus-stat-liquidity", liqTxt);
+  const ch = Number(pool.priceChange24h);
+  set("cetus-stat-change", Number.isFinite(ch) ? ((ch > 0 ? "+" : "") + ch.toFixed(2) + "%") : "—");
+  set("cetus-stat-txns", pool.txns24h != null ? String(pool.txns24h) : "—");
+  const bar = byId("cetus-progress-bar");
+  if (bar) bar.style.width = Number.isFinite(Number(pool.liquidityUsd)) ? Math.min(100, Math.max(8, Number(pool.liquidityUsd))) + "%" : "40%";
   const dexUrl = pool.url || "https://dexscreener.com/sui/" + CONFIG.poolId;
   const links = { "pool-swap-link": CONFIG.cetusBuyUrl, "pool-lp-link": CONFIG.poolUrl, "pool-dex-link": dexUrl, "board-pool-link": dexUrl };
   Object.entries(links).forEach(([id, href]) => { const el = byId(id); if (el && href) el.href = href; });
@@ -96,10 +103,18 @@ async function loadAftermathFarm() {
     const rate = pick(fields.emission_rates); const frequency = Number(pick(fields.emission_frequencies_ms)); const emitted = pick(fields.total_rewards_emitted); const remaining = pick(fields.total_rewards_remaining); const staked = pick(fields.total_staked_amount);
     const minutes = Number.isFinite(frequency) && frequency > 0 ? Math.round(frequency / 60000) : 10;
     set("aftermath-tvl", fmt(staked, 8) + " 10MM");
+    set("aftermath-tvl-sub", fmt(staked, 8) + " 10MM staked");
     set("aftermath-reward-rate", "~" + fmt(rate, 8) + " 10MM / " + minutes + " min · 98% ops share");
     set("aftermath-rewards", fmt(emitted, 8) + " paid · " + fmt(remaining, 8) + " remaining");
+    try {
+      const rem = BigInt(remaining || 0); const em = BigInt(emitted || 0); const tot = rem + em;
+      const pct = tot > 0n ? Number((rem * 10000n) / tot) / 100 : 0;
+      set("aftermath-remaining-pct", pct.toFixed(1) + "% of funded rewards left");
+      const pbar = byId("aftermath-progress-bar");
+      if (pbar) pbar.style.width = Math.max(2, Math.min(100, pct)) + "%";
+    } catch (_) { set("aftermath-remaining-pct", "—"); }
     set("stat-farm", fmt(staked, 8) + " 10MM");
-    set("aftermath-farm-status", "Live farm · " + fmt(rate, 8) + " configured now · ops tops up ~hourly; LP every 10m");
+    set("aftermath-farm-status", "Live farm · " + fmt(rate, 8) + " / " + minutes + "m · ops tops up ~hourly; LP every 10m");
   } catch (_) { set("aftermath-farm-status", "Live farm stats unavailable · retrying"); }
 }
 const decimalToMist = (value) => { const input = String(value || "").trim(); if (!/^[0-9]+([.][0-9]{1,9})?$/.test(input)) throw new Error("Enter a SUI amount with up to 9 decimal places."); const parts = input.split("."); return BigInt(parts[0]) * 1000000000n + BigInt(((parts[1] || "") + "000000000").slice(0, 9)); };
