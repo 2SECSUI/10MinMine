@@ -29,6 +29,22 @@ export const CONFIG = {
     coin: 'https://suiscan.xyz/mainnet/coin/0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM',
     metadata: 'https://suiscan.xyz/mainnet/object/0xf75e87d9c3c2f662db6e436d11d400c6161480840b06d954005510344efd6ef5',
   },
+  // LP registry: entries marked planned are not on-chain yet.
+  lpPools: [
+    { pair: "10MM/SUI", dex: "Cetus", status: "live", url: "https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2", note: "Existing pool" },
+    { pair: "10MM/USDC", dex: "Cetus", status: "live", url: "https://app.cetus.zone/position-detail/0xea597f81f78ea85b8deaddacdb9a6a16d4ce339a8098ee7610dc5be5e55ca689", note: "Pool 0x206393aebd71b06b7043c19f0f8b913f33c6afcfd06d6b7521783698502160ce; seeded 2026-09-07" },
+    { pair: "10MM/DEEP", dex: "Cetus", status: "live", url: "https://app.cetus.zone/position-detail/0x269f6bbce850180ef0382fc7cbdeffd06e70a946a03c74991c353052921d18e7", note: "Pool 0xf01f74a8ee91b0a8c01339280b78b7a95c19a5defcf6718a690efc880eab9db8; seeded 2026-09-07" },
+    { pair: "10MM/WAL", dex: "Cetus", status: "live", url: "https://app.cetus.zone/position-detail/0x236fd1eb19d1db149049ddcb0061e373edddb2e1db496afbc841b8a40bfee40d", note: "Pool 0x790a8816a1898c33e0bb3dcbb700dd24fcf5040a890623fba950e818341d1e4f; seeded 2026-09-07" },
+    { pair: "10MM/NAVX", dex: "Cetus", status: "skipped", url: "https://app.cetus.zone/swap", note: "Swap completed; pool creation failed InsufficientGas on 2026-09-07" },
+    { pair: "10MM/NS", dex: "Cetus", status: "skipped", url: "https://app.cetus.zone/swap", note: "Swap completed; pool creation failed locally on 2026-09-07" },
+    { pair: "10MM/vSUI", dex: "Cetus", status: "skipped", url: "https://app.cetus.zone/swap", note: "Swap completed; pool creation failed locally on 2026-09-07" },
+    { pair: "10MM/wUSDT", dex: "Cetus", status: "planned", url: "https://app.cetus.zone/swap", note: "Pending coin acquisition + pool creation" },
+    { pair: "10MM/suiUSDT", dex: "Cetus", status: "skipped", url: "https://app.cetus.zone/swap", note: "Swap completed; pool creation failed locally on 2026-09-07" },
+    { pair: "10MM/LBTC", dex: "Cetus", status: "planned", url: "https://app.cetus.zone/swap", note: "Pending coin acquisition + pool creation" },
+    { pair: "10MM/xBTC", dex: "Cetus", status: "planned", url: "https://app.cetus.zone/swap", note: "Pending coin acquisition + pool creation" },
+    { pair: "10MM/USDB", dex: "Cetus", status: "planned", url: "https://app.cetus.zone/swap", note: "Pending coin acquisition + pool creation" },
+    { pair: "10MM/MMT", dex: "Cetus", status: "planned", url: "https://app.cetus.zone/swap", note: "Pending coin acquisition + pool creation" },
+  ],
   stats: {
     blockReward: '50 10MM / block (then halvings)',
     currentSubsidy: '50 10MM / block',

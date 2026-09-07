@@ -459,4 +459,20 @@ async function refreshMine() {
   $("stat-reward").textContent = stats.blockReward || (hasValue(subsidy) ? `${subsidy} 10MM / block` : "50 10MM / block (then halvings)");
 }
 
+function renderLpPools() {
+  const host = $("lp-list");
+  if (!host) return;
+  (CONFIG.lpPools || []).forEach((pool) => {
+    const box = document.createElement("div"); box.className = "dapp";
+    const el = pool.url ? document.createElement("a") : document.createElement("span");
+    el.textContent = pool.pair + " · " + pool.dex;
+    if (pool.url) { el.href = pool.url; el.target = "_blank"; el.rel = "noopener noreferrer"; }
+    const note = document.createElement("small");
+    const state = pool.status === "live" ? "Live" : pool.status === "skipped" ? "Skipped" : "Planned";
+    note.textContent = state + (pool.note ? " · " + pool.note : "");
+    box.append(el, note); host.append(box);
+  });
+}
+
+renderLpPools();
 loadPoolSnapshot(); loadAftermathFarm(); loadCountdownAnchor().then(updateCountdown); refreshMine(); refreshMintData(); setInterval(updateCountdown, 1000); setInterval(() => { loadCountdownAnchor().then(updateCountdown); refreshMine(); }, 60000); setInterval(refreshMintData, 60000); setInterval(loadPoolSnapshot, 60000); setInterval(loadAftermathFarm, 60000);
