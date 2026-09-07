@@ -150,8 +150,13 @@ const details = {
   coinTypeA: pool.coin_type_a,
   coinTypeB: pool.coin_type_b,
   fixAmountA,
-  note: mode === "main" ? "existing main Cetus LP; TENMM fixed with matching SUI max input" : "existing second Cetus LP; TENMM-only, no SUI",
+  note: mode === "main" ? "existing main Cetus LP; TENMM fixed with matching SUI max input" : "existing second Cetus LP; TENMM-only fallback (zero SUI when position is out of range)",
 };
+
+if (process.argv.includes("--plan-only")) {
+  console.log(JSON.stringify({ ...details, mode: "plan-only", note: "Read-only LP plan; no PTB build because claimed TENMM is not yet in the wallet." }, null, 2));
+  process.exit(0);
+}
 
 if (!execute) {
   const bytes = await tx.build({ client });
