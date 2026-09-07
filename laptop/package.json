@@ -1,0 +1,11 @@
+{
+  "name": "10minmine-cetus-laptop-tools",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@cetusprotocol/sui-clmm-sdk": "^1.4.7",
+    "@flowx-finance/sdk": "^1.15.0",
+    "@mysten/sui": "^2.29.0",
+    "turbos-clmm-sdk": "^4.0.1"
+  }
+}
