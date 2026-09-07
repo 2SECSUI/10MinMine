@@ -1,5 +1,12 @@
 import { CONFIG } from "./config.js";
 import { SuiClient, getFullnodeUrl } from "https://esm.sh/@mysten/sui@1.39.0/client";
+
+const siteUrl = (rel) => {
+  const clean = String(rel || "").replace(/^\.\//, "");
+  const path = window.location.pathname;
+  const base = path.endsWith("/") ? path : (path.endsWith(".html") ? path.slice(0, path.lastIndexOf("/") + 1) : path + "/");
+  return base + clean;
+};
 // Note: public JSON-RPC may be deprecated; dashboard falls back to public/mine-*.json files.
 const $ = (id) => document.getElementById(id);
 const client = new SuiClient({ url: getFullnodeUrl(CONFIG.network) });
@@ -294,7 +301,18 @@ function renderMintLog(entries) {
   status.textContent = rows.length + " blocks · newest 10 in view · scroll for older";
 }
 async function refreshMintData() {
-  try { const log = await json("public/mine-log.json"); renderMintLog(log); } catch { renderMintLog([]); $("mint-log-status").textContent = "Mint log unavailable"; }
+  const paths = [siteUrl("public/mine-log.json"), siteUrl("data/mine-log.json"), "/10MinMine/site/public/mine-log.json"];
+  let lastErr = null;
+  for (const path of paths) {
+    try {
+      const log = await json(path);
+      renderMintLog(log);
+      return;
+    } catch (err) { lastErr = err; }
+  }
+  renderMintLog([]);
+  if ($("mint-log-status")) $("mint-log-status").textContent = "Mint log unavailable";
+  console.warn("mint log fetch failed", lastErr);
 }
 async function refreshMine() {
   const stats = CONFIG.stats || {};
@@ -323,9 +341,9 @@ async function refreshMine() {
     }
   }
 
-  const status = await json("public/mine-status.json").catch(() => null);
+  const status = await json(siteUrl("public/mine-status.json")).catch(() => null);
   let log = null;
-  try { log = await json("public/mine-log.json"); } catch {}
+  try { log = await json(siteUrl("public/mine-log.json")); } catch {}
 
   let height = null;
   let minted = null;
