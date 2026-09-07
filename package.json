@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "aftermath:topup": "node laptop/aftermath_topup.mjs"
+    "aftermath:topup": "node laptop/aftermath_topup.mjs",
+    "aftermath:emission": "node laptop/set_aftermath_emission.mjs"
   },
   "dependencies": {
     "@mysten/sui": "^2.29.0",

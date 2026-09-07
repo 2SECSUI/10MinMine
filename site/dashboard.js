@@ -47,10 +47,10 @@ async function loadAftermathFarm() {
     const rate = pick(fields.emission_rates); const frequency = Number(pick(fields.emission_frequencies_ms)); const emitted = pick(fields.total_rewards_emitted); const remaining = pick(fields.total_rewards_remaining); const staked = pick(fields.total_staked_amount);
     const minutes = Number.isFinite(frequency) && frequency > 0 ? Math.round(frequency / 60000) : 10;
     set("aftermath-tvl", fmt(staked, 8) + " 10MM");
-    set("aftermath-reward-rate", "0.00004185 10MM / " + minutes + " min initial · 98% top-ups");
+    set("aftermath-reward-rate", "~" + fmt(rate, 8) + " 10MM / " + minutes + " min · 98% ops share");
     set("aftermath-rewards", fmt(emitted, 8) + " paid · " + fmt(remaining, 8) + " remaining");
     set("stat-farm", fmt(staked, 8) + " 10MM");
-    set("aftermath-farm-status", "Live farm · " + fmt(rate, 8) + " configured now · 98% top-ups until height 210000");
+    set("aftermath-farm-status", "Live farm · " + fmt(rate, 8) + " configured now · ops tops up ~hourly; LP every 10m");
   } catch (_) { set("aftermath-farm-status", "Live farm stats unavailable · retrying"); }
 }
 const decimalToMist = (value) => { const input = String(value || "").trim(); if (!/^[0-9]+([.][0-9]{1,9})?$/.test(input)) throw new Error("Enter a SUI amount with up to 9 decimal places."); const parts = input.split("."); return BigInt(parts[0]) * 1000000000n + BigInt(((parts[1] || "") + "000000000").slice(0, 9)); };

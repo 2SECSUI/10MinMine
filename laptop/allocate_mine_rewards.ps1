@@ -89,5 +89,5 @@ if (Test-Path $pending) {
 $list = @($list) + @($entry)
 $list | ConvertTo-Json -Depth 6 | Set-Content -Path $pending -Encoding utf8
 Write-Host ("queued -> " + $pending)
-Write-Host "TODO: Cetus allocation helpers (amounts queued)"
+Write-Host ("Cetus LP allocation queued: main {0} 10MM with matching SUI; position {1} 10MM-only" -f , )
 if ($topupExit -ne 0) { exit $topupExit }

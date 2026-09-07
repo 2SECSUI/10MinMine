@@ -44,3 +44,7 @@ Other registered wallets keep their on-chain share (e.g. ~3.333) as developer co
 ## Current Aftermath farm
 
 Use `laptop/FARM.md` as the canonical mainnet record. The live TENMM farm is `0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7`; its AuthorityCap is `0x6b61c57c69dd56a419be9b384e1422a2056628dba993e576a2a42776335f92ed`. The initial reward is 11 TENMM at 4185 mist per 10-minute period with a five-year emission window; run `allocate_mine_rewards.ps1 -Execute` after mines to top up continuously.
+
+## Aftermath emission and top-up (run on the laptop only)
+
+Do not run the signing commands from the repository box. Pull the scripts into the separate runtime directory and install dependencies there:

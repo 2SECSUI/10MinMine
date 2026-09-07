@@ -67,7 +67,7 @@ Write-Host ("logged -> " + $TXT_LOG)
 Write-Host $line
 
 
-# Split ops mine share: 75% Aftermath / 20% Cetus / 5% Turbos (other wallets keep their registry payout as dev)
+# Split ops mine share: 98% Aftermath / 1% Cetus main LP / 1% Cetus position (other wallets keep their registry payout as dev)
 $alloc = Join-Path $here "allocate_mine_rewards.ps1"
 if (Test-Path $alloc) {
   try {
