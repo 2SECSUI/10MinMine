@@ -1,12 +1,12 @@
 # Split ops' mine payout after each successful mine (until first halving at height 210000).
-#   98% -> Aftermath farm
-#    1% -> existing Cetus main LP (TENMM + matching SUI)
-#    1% -> existing second Cetus LP (TENMM-only)
+#   98% -> Aftermath farm (TENMM only)
+#    2% -> new out-of-range Cetus positions (TENMM only; SUI is gas only)
 param(
   [Parameter(Mandatory = $true)][double]$OpsAmount10mm,
   [Parameter(Mandatory = $false)][int]$Height = 0,
   [Parameter(Mandatory = $false)][string]$Digest = "",
-  [Parameter(Mandatory = $false)][switch]$Execute
+  [Parameter(Mandatory = $false)][switch]$Execute,
+  [Parameter(Mandatory = $false)][double]$ReserveSui = 4
 )
 $ErrorActionPreference = "Continue"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -49,9 +49,7 @@ function Get-StatusFromOutput {
 
 $HALVING_HEIGHT = 210000
 $AF_FARM = "0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7"
-$CETUS_MAIN_POOL = "0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2"
-$CETUS_MAIN_POSITION_ID = "0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be"
-$CETUS_SECOND_POSITION_ID = "0x885c09217753a405d987d0604ba4c78f4c34510576a478f803bf4ace91a10546"
+$OOR_SCRIPT = "laptop\cetus_oor_add.mjs"
 $LOG = Join-Path $here "allocate_log.txt"
 
 if ($Height -ge $HALVING_HEIGHT) {
@@ -64,18 +62,17 @@ if ($OpsAmount10mm -le 0) {
 }
 
 $farm = [math]::Round($OpsAmount10mm * 0.98, 8)
-$cetusMain = [math]::Round($OpsAmount10mm * 0.01, 8)
-$cetusSecond = [math]::Round($OpsAmount10mm * 0.01, 8)
-$delta = [math]::Round($OpsAmount10mm - ($farm + $cetusMain + $cetusSecond), 8)
+$oor = [math]::Round($OpsAmount10mm * 0.02, 8)
+$delta = [math]::Round($OpsAmount10mm - ($farm + $oor), 8)
 $farm = [math]::Round($farm + $delta, 8)
 $ts = Get-Date -Format "yyyy-MM-ddTHH:mm:ssK"
-$plan = "$ts height=$Height digest=$Digest ops=$OpsAmount10mm farm98=$farm cetusMain1=$cetusMain cetusSecond1=$cetusSecond af=$AF_FARM cetusPool=$CETUS_MAIN_POOL mainPosition=$CETUS_MAIN_POSITION_ID secondPosition=$CETUS_SECOND_POSITION_ID"
+$plan = "$ts height=$Height digest=$Digest ops=$OpsAmount10mm farm98=$farm oor2=$oor gasReserveSui=$ReserveSui af=$AF_FARM"
 Add-Content -Path $LOG -Value $plan -Encoding utf8
 Write-Host $plan
-Write-Host ("plan: Aftermath {0} 10MM | main Cetus LP {1} 10MM + matching SUI | second Cetus LP {2} 10MM TENMM-only" -f $farm, $cetusMain, $cetusSecond)
+Write-Host ("plan: Aftermath {0} 10MM | Cetus OOR {1} 10MM TENMM-only | SUI reserved for gas only ({2} SUI)" -f $farm, $oor, $ReserveSui)
 
 if (-not $Execute) {
-  Write-Host "dry-run only (pass -Execute to execute Aftermath and both existing-position Cetus adds)"
+  Write-Host "dry-run only (pass -Execute to execute Aftermath top-up and the OOR TENMM-only add)"
   exit 0
 }
 
@@ -84,26 +81,20 @@ $topupDigest = Get-DigestFromOutput
 $topupStatus = if ($topupExit -eq 0) { Get-StatusFromOutput } else { "pending" }
 if ($topupExit -ne 0) { Write-Warning "Aftermath top-up failed (exit $topupExit); keeping it pending." }
 
-$mainExit = Invoke-RepoNode "laptop\cetus_lp_add.mjs" "--mode" "main" "--amount10mm" ([string]$cetusMain) "--execute"
-$mainDigest = Get-DigestFromOutput
-$mainStatus = if ($mainExit -eq 0) { Get-StatusFromOutput } else { "pending" }
-if ($mainExit -ne 0) { Write-Warning "main Cetus LP add failed (exit $mainExit); keeping it pending." }
+$oorExit = Invoke-RepoNode $OOR_SCRIPT "--total-10mm" ([string]$oor) "--gas-reserve-sui" ([string]$ReserveSui) "--execute"
+$oorDigest = Get-DigestFromOutput
+$oorStatus = if ($oorExit -eq 0) { Get-StatusFromOutput } else { "pending" }
+if ($oorExit -ne 0) { Write-Warning "Cetus OOR add failed (exit $oorExit); keeping it pending." }
 
-$secondExit = Invoke-RepoNode "laptop\cetus_lp_add.mjs" "--mode" "second" "--amount10mm" ([string]$cetusSecond) "--execute"
-$secondDigest = Get-DigestFromOutput
-$secondStatus = if ($secondExit -eq 0) { Get-StatusFromOutput } else { "pending" }
-if ($secondExit -ne 0) { Write-Warning "second Cetus LP add failed (exit $secondExit); keeping it pending." }
-
-$resultLine = "$ts height=$Height mineDigest=$Digest aftermath=$topupStatus aftermathDigest=$topupDigest mainCetus=$mainStatus mainDigest=$mainDigest secondCetus=$secondStatus secondDigest=$secondDigest"
+$resultLine = "$ts height=$Height mineDigest=$Digest aftermath=$topupStatus aftermathDigest=$topupDigest oor=$oorStatus oorDigest=$oorDigest"
 Add-Content -Path $LOG -Value $resultLine -Encoding utf8
 Write-Host $resultLine
 
 $failed = @()
 if ($topupExit -ne 0) { $failed += "aftermath" }
-if ($mainExit -ne 0) { $failed += "cetus-main" }
-if ($secondExit -ne 0) { $failed += "cetus-second" }
+if ($oorExit -ne 0) { $failed += "cetus-oor" }
 if ($failed.Count -eq 0) {
-  Write-Host "allocation complete: Aftermath, main Cetus LP, and second Cetus LP all executed"
+  Write-Host "allocation complete: Aftermath top-up and TENMM-only Cetus OOR add executed"
   exit 0
 }
 
@@ -115,18 +106,13 @@ $entry = [pscustomobject]@{
   failed = $failed
   ops_amount_10mm = $OpsAmount10mm
   aftermath_10mm = $farm
-  cetus_main_10mm = $cetusMain
-  cetus_second_10mm = $cetusSecond
+  oor_10mm = $oor
+  gas_reserve_sui = $ReserveSui
   aftermath_status = $topupStatus
   aftermath_digest = $topupDigest
-  cetus_main_status = $mainStatus
-  cetus_main_digest = $mainDigest
-  cetus_second_status = $secondStatus
-  cetus_second_digest = $secondDigest
+  oor_status = $oorStatus
+  oor_digest = $oorDigest
   aftermath_farm = $AF_FARM
-  cetus_main_pool = $CETUS_MAIN_POOL
-  cetus_main_position_id = $CETUS_MAIN_POSITION_ID
-  cetus_second_position_id = $CETUS_SECOND_POSITION_ID
 }
 $list = @()
 if (Test-Path $pending) {

@@ -34,12 +34,13 @@ Cetus/Turbos buys alone do **not** register. Only this path / site Send / mine d
 Mint log then shows each registered holder’s share (you get less; they get some).
 
 ## Post-mine allocation (until first halving @ 210000)
-After each mine, `allocate_mine_rewards.ps1` splits **ops registry share**:
-- **98%** → Aftermath farm rewards `0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7`
-- **1%** → Cetus main pool `0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2` (10MM with matching SUI, in-range)
-- **1%** → second Cetus LP position `0x885c09217753a405d987d0604ba4c78f4c34510576a478f803bf4ace91a10546` (TENMM-only, no SUI)
-Turbos remains unused. Any rounding residue is added to Aftermath.
-Other registered wallets keep their on-chain share (e.g. ~3.333) as developer costs.
+After each mine, `allocate_mine_rewards.ps1` splits the **ops registry share**:
+- **98%** -> Aftermath farm rewards (TENMM only)
+- **2%** -> new out-of-range Cetus positions via `cetus_oor_add.mjs` (TENMM only)
+
+The OOR path never matches SUI into an in-range LP. SUI is checked and reserved only for transaction gas; `suiLiquidityInputRaw` is always zero. Turbos remains unused. Any rounding residue is added to Aftermath.
+
+For a manual claim, use `claim_then_oor.ps1` (or the compatibility name `claim_aftermath_to_lps.ps1`). The Task Scheduler entrypoint is `ops/run_aftermath_claim_lp.ps1`; it points to the same claim-then-OOR workflow.
 
 ## Current Aftermath farm
 

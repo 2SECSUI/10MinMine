@@ -13,7 +13,7 @@ Canonical farm for 10MinMine (mainnet):
 - Emission start: `1788738090586` ms (2026-09-07 00:41:30.586 Europe/Dublin)
 - Emission end: `1946444490586` ms (2031-09-07 00:41:30.586 Europe/Dublin)
 
-The initial 11 TENMM reward was recovered from the ended farm and seeded here. The low initial rate deliberately gives a multi-year emission window; ongoing `allocate_mine_rewards.ps1 -Execute` top-ups extend the funded runway without recreating the old short-window bug. The owner cap is operational data, not a secret; never commit private keys or keystore files.
+The initial 11 TENMM reward was recovered from the ended farm and seeded here. The low initial rate deliberately gives a multi-year emission window; ongoing `allocate_mine_rewards.ps1 -Execute` top-ups extend the funded runway; its 2% Cetus leg is TENMM-only OOR and uses SUI only for gas without recreating the old short-window bug. The owner cap is operational data, not a secret; never commit private keys or keystore files.
 
 Transactions:
 
