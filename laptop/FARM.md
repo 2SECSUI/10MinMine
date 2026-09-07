@@ -20,3 +20,4 @@ Transactions:
 - Old-farm recovery (11 TENMM): `DA3dsuxuDLgswkHTnmhZLJC6991WyUFDyNfytVurHG1t`
 - New farm creation: `9cvoxfhykeL3nUNx68VkCmnWdNZV9wmtrTBzExAntUWW`
 - Reward initialization: `3jykeso1TmKQVSjCssLEdV6AzUPZ9XYepKLv5hsziTMX`
+The one-time emission migration raises the schedule from 4,185 mist to 4,570,000,000 mist per 10-minute period; run it from the laptop runtime only.

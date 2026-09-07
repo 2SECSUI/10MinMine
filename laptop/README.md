@@ -37,7 +37,7 @@ Mint log then shows each registered holder’s share (you get less; they get som
 After each mine, `allocate_mine_rewards.ps1` splits **ops registry share**:
 - **98%** → Aftermath farm rewards `0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7`
 - **1%** → Cetus main pool `0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2` (10MM with matching SUI, in-range)
-- **1%** → Cetus position `0x885c09217753a405d987d0604ba4c78f4c34510576a478f803bf4ace91a10546` (10MM-only while out of range, no SUI)
+- **1%** → second Cetus LP position `0x885c09217753a405d987d0604ba4c78f4c34510576a478f803bf4ace91a10546` (TENMM-only, no SUI)
 Turbos remains unused. Any rounding residue is added to Aftermath.
 Other registered wallets keep their on-chain share (e.g. ~3.333) as developer costs.
 
@@ -48,3 +48,11 @@ Use `laptop/FARM.md` as the canonical mainnet record. The live TENMM farm is `0x
 ## Aftermath emission and top-up (run on the laptop only)
 
 Do not run the signing commands from the repository box. Pull the scripts into the separate runtime directory and install dependencies there:
+Windows paths: C:\Users\carlo\OneDrive\Desktop\10MinMine and C:\Users\carlo\OneDrive\Desktop\10MinMine-laptop.
+Run dependency installation in both the Desktop repository and the separate laptop runtime directory before starting the mine loop.
+The mine loop invokes the allocation script after each successful mine; allocations are planned for the 10-minute cycle.
+The one-time emission migration is `set_aftermath_emission.mjs` and targets 4,570,000,000 mist (about 45.7 TENMM per 10-minute period); the one-time runway top-up is 274 TENMM via `aftermath_topup.mjs`.
+## Cetus LP deployment
+
+Refresh the laptop runtime in one PowerShell line, then restart the loop:
+Refresh: pull, install dependencies, copy the three scripts, then restart the loop.
