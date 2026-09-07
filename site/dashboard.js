@@ -16,20 +16,57 @@ const coinType = () => CONFIG.coinType || (CONFIG.packageId ? `${CONFIG.packageI
 const byId = (id) => document.getElementById(id);
 async function loadPoolSnapshot() {
   const set = (id, value) => { const el = byId(id); if (el) el.textContent = value; };
-  const money = (value) => { const n = Number(value); return Number.isFinite(n) ? "\u0024" + n.toLocaleString(undefined, { maximumFractionDigits: 6 }) : "—"; };
+  const money = (value) => { const n = Number(value); return Number.isFinite(n) ? "$" + n.toLocaleString(undefined, { maximumFractionDigits: 6 }) : "—"; };
   const sui = (value) => { const n = Number(value); return Number.isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: 8 }) + " SUI" : "—"; };
+  const amt = (value, suffix) => { const n = Number(value); return Number.isFinite(n) ? n.toLocaleString(undefined, { maximumFractionDigits: 4 }) + " " + suffix : null; };
   let pool;
+  const fromPair = (pair) => ({
+    priceNative: pair.priceNative,
+    priceUsd: pair.priceUsd,
+    liquidityUsd: pair.liquidity && pair.liquidity.usd,
+    liquidityBase: pair.liquidity && pair.liquidity.base,
+    liquidityQuote: pair.liquidity && pair.liquidity.quote,
+    volume24hUsd: pair.volume && pair.volume.h24,
+    url: pair.url,
+    fetchedAt: new Date().toISOString(),
+  });
   try {
+    let pair = null;
     const live = await fetch("https://api.dexscreener.com/latest/dex/pairs/sui/" + CONFIG.poolId, { cache: "no-store" });
-    if (!live.ok) throw new Error("DexScreener unavailable");
-    const payload = await live.json(); const pair = payload.pairs && payload.pairs[0];
+    if (live.ok) {
+      const payload = await live.json();
+      pair = payload.pairs && payload.pairs[0];
+    }
+    if (!pair && CONFIG.coinType) {
+      const byToken = await fetch("https://api.dexscreener.com/latest/dex/tokens/" + encodeURIComponent(CONFIG.coinType), { cache: "no-store" });
+      if (byToken.ok) {
+        const payload = await byToken.json();
+        const pairs = Array.isArray(payload.pairs) ? payload.pairs : [];
+        pair = pairs.find((p) => String(p.pairAddress || "").toLowerCase() === String(CONFIG.poolId || "").toLowerCase()) || pairs[0];
+      }
+    }
     if (!pair) throw new Error("Cetus pair unavailable");
-    pool = { priceNative: pair.priceNative, priceUsd: pair.priceUsd, liquidityUsd: pair.liquidity && pair.liquidity.usd, volume24hUsd: pair.volume && pair.volume.h24, url: pair.url, fetchedAt: new Date().toISOString() };
-  } catch (_) { pool = await json("public/mine-pool.json"); }
+    pool = fromPair(pair);
+  } catch (_) {
+    const fallback = await json(siteUrl("public/mine-pool.json")).catch(() => json("public/mine-pool.json"));
+    pool = {
+      priceNative: fallback.priceNative,
+      priceUsd: fallback.priceUsd,
+      liquidityUsd: fallback.liquidityUsd,
+      liquidityBase: fallback.liquidityBase ?? fallback.baseLiquidity,
+      liquidityQuote: fallback.liquidityQuote ?? fallback.quoteLiquidity,
+      volume24hUsd: fallback.volume24hUsd,
+      url: fallback.url,
+      fetchedAt: fallback.fetchedAt,
+    };
+  }
   const priceSui = sui(pool.priceNative); const priceUsd = money(pool.priceUsd); const tvl = money(pool.liquidityUsd); const volume = money(pool.volume24hUsd);
+  const baseTxt = amt(pool.liquidityBase, "10MM");
+  const quoteTxt = amt(pool.liquidityQuote, "SUI");
+  const liqTxt = (baseTxt && quoteTxt) ? (baseTxt + " + " + quoteTxt) : "—";
   set("pool-price-sui", priceSui); set("pool-price-usd", priceUsd); set("pool-tvl", tvl); set("pool-volume", volume);
   set("board-pool-price", priceSui + " / " + priceUsd); set("board-pool-tvl", tvl); set("board-pool-volume", volume);
-  set("cetus-stat-tvl", tvl); set("cetus-stat-price", priceSui + " / " + priceUsd); set("cetus-stat-volume", volume);
+  set("cetus-stat-tvl", tvl); set("cetus-stat-price", priceSui + " / " + priceUsd); set("cetus-stat-volume", volume); set("cetus-stat-liquidity", liqTxt);
   const dexUrl = pool.url || "https://dexscreener.com/sui/" + CONFIG.poolId;
   const links = { "pool-swap-link": CONFIG.cetusBuyUrl, "pool-lp-link": CONFIG.poolUrl, "pool-dex-link": dexUrl, "board-pool-link": dexUrl };
   Object.entries(links).forEach(([id, href]) => { const el = byId(id); if (el && href) el.href = href; });
@@ -39,7 +76,12 @@ async function loadPoolSnapshot() {
 
 async function loadAftermathFarm() {
   const set = (id, value) => { const el = byId(id); if (el) el.textContent = value; };
-  const endpoints = ["https://mainnet.suiet.app", CONFIG.rpcUrl].filter(Boolean);
+  const endpoints = [
+    "https://mainnet.suiet.app",
+    "https://rpc-mainnet.suiscan.xyz:443",
+    CONFIG.rpcUrl,
+    ...((CONFIG.rpcFallbacks) || []),
+  ].filter((v, i, a) => v && a.indexOf(v) === i);
   try {
     let fields;
     for (const endpoint of endpoints) {
@@ -397,4 +439,4 @@ async function refreshMine() {
   $("stat-reward").textContent = stats.blockReward || (hasValue(subsidy) ? `${subsidy} 10MM / block` : "50 10MM / block (then halvings)");
 }
 
-loadPoolSnapshot(); loadAftermathFarm(); loadCountdownAnchor().then(updateCountdown); refreshMine(); refreshMintData(); setInterval(updateCountdown, 1000); setInterval(() => { loadCountdownAnchor().then(updateCountdown); refreshMine(); }, 60000); setInterval(refreshMintData, 60000); setInterval(loadPoolSnapshot, 300000); setInterval(loadAftermathFarm, 60000);
+loadPoolSnapshot(); loadAftermathFarm(); loadCountdownAnchor().then(updateCountdown); refreshMine(); refreshMintData(); setInterval(updateCountdown, 1000); setInterval(() => { loadCountdownAnchor().then(updateCountdown); refreshMine(); }, 60000); setInterval(refreshMintData, 60000); setInterval(loadPoolSnapshot, 60000); setInterval(loadAftermathFarm, 60000);

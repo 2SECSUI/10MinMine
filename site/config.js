@@ -1,7 +1,8 @@
 // 10MM mainnet v2. Never put private keys here.
 export const CONFIG = {
   network: 'mainnet',
-  rpcUrl: 'https://sui-mainnet-endpoint.blockvision.org',
+  rpcUrl: 'https://mainnet.suiet.app',
+  rpcFallbacks: ['https://rpc-mainnet.suiscan.xyz:443', 'https://sui-mainnet-endpoint.blockvision.org'],
   packageId: '0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98',
   rewardPoolId: '0x32423737a8e607111bc5ecb2ac49d226cc948abe4d690b55c20d63b09ee6e619',
   holderRegistryId: '0x5c637f112680491744d2513484b78ca8c64c334dc9d4a3a6233c8f92dbd970e9',
