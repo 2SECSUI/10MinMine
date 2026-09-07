@@ -12,6 +12,21 @@ param(
 )
 $ErrorActionPreference = "Continue"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
+# Prefer Desktop\10MinMine for node_modules (scripts may live in 10MinMine-laptop)
+$RepoRoot = if ($env:REPO_DIR) { $env:REPO_DIR } else { Join-Path (Split-Path $here -Parent) "10MinMine" }
+if (-not (Test-Path (Join-Path $RepoRoot "package.json"))) {
+  $alt = Join-Path $env:USERPROFILE "OneDrive\Desktop\10MinMine"
+  if (Test-Path (Join-Path $alt "package.json")) { $RepoRoot = $alt }
+}
+function Invoke-RepoNode {
+  param([Parameter(Mandatory=$true)][string]$ScriptRelative, [Parameter(ValueFromRemainingArguments=$true)]$Args)
+  $scriptPath = Join-Path $RepoRoot $ScriptRelative
+  if (-not (Test-Path $scriptPath)) { $scriptPath = Join-Path $here (Split-Path $ScriptRelative -Leaf) }
+  if (-not (Test-Path $scriptPath)) { throw "Node script not found: $ScriptRelative" }
+  Push-Location $RepoRoot
+  try { & node $scriptPath @Args; return $LASTEXITCODE }
+  finally { Pop-Location }
+}
 $HALVING_HEIGHT = 210000
 $AF_FARM = "0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7"
 $CETUS_MAIN_POOL = "0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2"
@@ -41,7 +56,7 @@ $ts = Get-Date -Format "yyyy-MM-ddTHH:mm:ssK"
 $line = "$ts height=$Height digest=$Digest ops=$OpsAmount10mm farm98=$farm cetusMain1=$cetusMain cetusPosition1=$cetusPosition af=$AF_FARM cetusMainPool=$CETUS_MAIN_POOL cetusPositionId=$CETUS_POSITION_ID"
 Add-Content -Path $LOG -Value $line -Encoding utf8
 Write-Host $line
-Write-Host ("plan: Aftermath deposit {0} 10MM | Cetus main add {1} 10MM with matching SUI (in-range) | Cetus position target add {2} 10MM-only while out of range (no SUI)" -f $farm, $cetusMain, $cetusPosition)
+Write-Host ("plan: Aftermath deposit {0} 10MM | Cetus main add {1} 10MM with matching SUI (in-range) | second Cetus LP add {2} 10MM (no matching SUI)" -f $farm, $cetusMain, $cetusPosition)
 
 if (-not $Execute) {
   Write-Host "dry-run only (pass -Execute to top up Aftermath and queue the other allocations)"
@@ -54,9 +69,8 @@ if (-not (Test-Path $topup)) {
   exit 1
 }
 
-Write-Host ("Aftermath top-up starting: {0} 10MM" -f $farm)
-& node $topup ([string]$farm) --execute
-$topupExit = $LASTEXITCODE
+Write-Host ("Aftermath top-up starting: {0} 10MM (node cwd=$RepoRoot)" -f $farm)
+$topupExit = Invoke-RepoNode "laptop\aftermath_topup.mjs" ([string]$farm) "--execute"
 $topupStatus = if ($topupExit -eq 0) { "aftermath_executed" } else { "aftermath_pending" }
 if ($topupExit -ne 0) {
   Write-Warning "Aftermath top-up failed or produced an unsigned artifact (exit code $topupExit); keeping it pending."
@@ -75,7 +89,7 @@ $entry = [pscustomobject]@{
   cetus_main_pool = $CETUS_MAIN_POOL
   cetus_main_mode = "tenmm_with_matching_sui_in_range"
   cetus_position_id = $CETUS_POSITION_ID
-  cetus_position_mode = "tenmm_only_while_out_of_range_no_sui"
+  cetus_position_mode = "tenmm_only_second_lp_no_sui"
   status = $topupStatus
   aftermath_exit_code = $topupExit
 }
@@ -89,5 +103,5 @@ if (Test-Path $pending) {
 $list = @($list) + @($entry)
 $list | ConvertTo-Json -Depth 6 | Set-Content -Path $pending -Encoding utf8
 Write-Host ("queued -> " + $pending)
-Write-Host ("Cetus LP allocation queued: main {0} 10MM with matching SUI; position {1} 10MM-only" -f , )
+Write-Host ("Cetus LP allocation queued: main {0} 10MM with matching SUI; second LP {1} 10MM" -f $cetusMain, $cetusPosition)
 if ($topupExit -ne 0) { exit $topupExit }
