@@ -90,7 +90,7 @@ function writeArtifact(details, bytes) {
 
 const priceText = arg("--price-sui-per-10mm") ?? "0.04080";
 const quoteText = arg("--sui-amount") ?? "1";
-const reserveText = arg("--reserve-sui") ?? "4";
+const reserveText = arg("--reserve-sui") ?? "0.75";
 const quoteAmountRaw = parseDecimal(quoteText, 9, "sui-amount");
 const reserveRaw = parseDecimal(reserveText, 9, "reserve-sui");
 if (quoteAmountRaw <= 0n) die("sui-amount must be greater than zero");

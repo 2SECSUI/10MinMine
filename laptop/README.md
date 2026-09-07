@@ -38,7 +38,7 @@ After each mine, `allocate_mine_rewards.ps1` splits the **ops registry share**:
 - **98%** -> Aftermath farm rewards (TENMM only)
 - **2%** -> new out-of-range Cetus positions via `cetus_oor_add.mjs` (TENMM only)
 
-The OOR path never matches SUI into an in-range LP. SUI is checked and reserved only for transaction gas; `suiLiquidityInputRaw` is always zero. Turbos remains unused. Any rounding residue is added to Aftermath.
+The OOR path never matches SUI into an in-range LP. SUI is checked and reserved only for transaction gas (default reserve: 0.75 SUI); `suiLiquidityInputRaw` is always zero. All live Cetus OOR adds are batched into one PTB, and the claim/OOR wrappers never invoke `cetus_lp_add` or match an in-range position. Turbos remains unused. Any rounding residue is added to Aftermath.
 
 For a manual claim, use `claim_then_oor.ps1` (or the compatibility name `claim_aftermath_to_lps.ps1`). The Task Scheduler entrypoint is `ops/run_aftermath_claim_lp.ps1`; it points to the same claim-then-OOR workflow.
 

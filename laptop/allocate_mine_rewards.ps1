@@ -6,7 +6,7 @@ param(
   [Parameter(Mandatory = $false)][int]$Height = 0,
   [Parameter(Mandatory = $false)][string]$Digest = "",
   [Parameter(Mandatory = $false)][switch]$Execute,
-  [Parameter(Mandatory = $false)][double]$ReserveSui = 4
+  [Parameter(Mandatory = $false)][double]$ReserveSui = 0.75
 )
 $ErrorActionPreference = "Continue"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path

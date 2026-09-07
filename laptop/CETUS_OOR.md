@@ -1,6 +1,6 @@
 # Cetus 10MM single-sided OOR routine
 
-Script: `cetus_oor_add.mjs` (default build-only dry-run; `--plan-only` prints ranges without PTB building; `--execute` submits one PTB per pool).
+Script: `cetus_oor_add.mjs` (default build-only dry-run; `--plan-only` prints ranges without PTB building; `--execute` submits one batched PTB for all pools).
 
 ## Range rule
 
@@ -8,7 +8,7 @@ The script reads live Cetus pools from `../site/config.js`, reads the current `1
 
 ## Latest mainnet deployment
 
-DexScreener 10MM/USD was 0.03411. Target lower USD was 0.03611; target upper was 1.00000. Latest wallet query after execution: 0.00000003 TENMM and 8.293645891 SUI; the 4 SUI reserve remains intact. Eight Cetus pools were funded. Turbos WAL and planned FlowX are not handled by this Cetus script.
+DexScreener 10MM/USD was 0.03411. Target lower USD was 0.03611; target upper was 1.00000. Latest wallet query after execution: 0.00000003 TENMM and 8.293645891 SUI; the 0.75 SUI gas reserve remains intact. Eight Cetus pools were funded. Turbos WAL and planned FlowX are not handled by this Cetus script.
 
 | Pool | New position | Digest | Ticks | Quote band (rounded) |
 |---|---|---|---:|---:|
@@ -26,4 +26,4 @@ DexScreener 10MM/USD was 0.03411. Target lower USD was 0.03611; target upper was
 
 ## Routine wording
 
-ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œEvery 10 minutes: refresh DexScreener and the wallet; if 10MM/USD has risen, run `node cetus_oor_add.mjs --execute` from the laptop runtime. The script must first keep the 4 SUI gas reserve, split only currently available TENMM equally across live Cetus pools, add to an existing still-OOR position when one exists, otherwise open a new quote-price range starting about $0.002 above current spot, and never add to an in-range position.ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â
+ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œEvery 10 minutes: refresh DexScreener and the wallet; if 10MM/USD has risen, run `node cetus_oor_add.mjs --execute` from the laptop runtime. The script must first keep the 0.75 SUI gas reserve, split only currently available TENMM equally across live Cetus pools, add to an existing still-OOR position when one exists, otherwise open a new quote-price range starting about $0.002 above current spot, and never add to an in-range position. All pool adds are batched into one PTB to minimize gas.ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â

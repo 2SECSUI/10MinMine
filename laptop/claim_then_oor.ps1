@@ -1,11 +1,11 @@
 # Claim Aftermath TENMM rewards, then place only that TENMM in new OOR Cetus positions.
-# SUI is never supplied to the LP; it is reserved only for transaction gas.
+# SUI is never supplied to the LP; it is reserved only for transaction gas. This path never invokes cetus_lp_add (in-range matching is disabled).
 [CmdletBinding()]
 param(
   [switch]$Execute,
   [switch]$SkipClaim,
   [decimal]$Total10mm = 0,
-  [decimal]$GasReserveSui = 4
+  [decimal]$GasReserveSui = 0.75
 )
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path

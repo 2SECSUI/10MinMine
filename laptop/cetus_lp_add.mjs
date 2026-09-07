@@ -130,7 +130,7 @@ if (mode !== "main" && mode !== "second") die("--mode must be main or second");
 const execute = process.argv.includes("--execute");
 const planOnly = process.argv.includes("--plan-only");
 if (execute && planOnly) die("choose only one of --execute or --plan-only");
-const reserveRaw = parseRaw(arg("--reserve-sui") ?? "4", SUI_DECIMALS, "reserve-sui");
+const reserveRaw = parseRaw(arg("--reserve-sui") ?? "0.75", SUI_DECIMALS, "reserve-sui");
 const budgetRaw = parseRaw(arg("--sui-budget") ?? "1", SUI_DECIMALS, "sui-budget");
 if (budgetRaw <= 0n) die("sui-budget must be greater than zero");
 const requestedAmount = arg("--amount10mm") ? parseAmount(arg("--amount10mm")) : null;

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Open new single-sided TENMM positions above the current TENMM/quote price
- * in every live Cetus pool listed by site/config.js.
+ * Add TENMM to one still-out-of-range position per live Cetus pool, or open
+ * a new single-sided OOR position when that pool has no suitable position.
  *
  * Default is a build-only dry run. --plan-only skips PTB building.
- * --execute signs and submits one transaction per pool. SUI is used only as gas;
+ * --execute signs and submits one batched transaction for all pools. SUI is used only as gas;
  * no SUI is supplied as liquidity. Keep the gas reserve.
  */
 import fs from "node:fs";
@@ -17,6 +17,7 @@ import { CetusClmmSDK } from "@cetusprotocol/sui-clmm-sdk";
 import { SuiGrpcClient } from "@mysten/sui/grpc";
 import { decodeSuiPrivateKey } from "@mysten/sui/cryptography";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { Transaction, coinWithBalance } from "@mysten/sui/transactions";
 
 const OPS_WALLET = "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a";
 const TENMM_TYPE = "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98::tenmm::TENMM";
@@ -99,6 +100,20 @@ function rawPriceForQuotePerTenmm(pool, decA, decB, quotePerTenmm) {
 function tickAtRawPrice(raw) { return Math.log(raw) / PRICE_LOG_BASE; }
 function ceilSpacing(tick, spacing) { return Math.ceil(tick / spacing) * spacing; }
 function floorSpacing(tick, spacing) { return Math.floor(tick / spacing) * spacing; }
+function isStillOutOfRange(position, currentTick) {
+  const lower = Number(position.tick_lower_index);
+  const upper = Number(position.tick_upper_index);
+  return Number.isFinite(lower) && Number.isFinite(upper) && (currentTick <= lower || currentTick >= upper);
+}
+async function findStillOorPosition(sdk, poolId, currentTick) {
+  const positions = await sdk.Position.getPositionList(OPS_WALLET, [poolId], true);
+  return positions
+    .filter((position) => isType(position.pool, poolId) && BigInt(position.liquidity ?? 0) > 0n && isStillOutOfRange(position, currentTick))
+    .sort((a, b) => {
+      const liquidityDelta = BigInt(b.liquidity ?? 0) - BigInt(a.liquidity ?? 0);
+      return liquidityDelta === 0n ? String(a.pos_object_id).localeCompare(String(b.pos_object_id)) : (liquidityDelta > 0n ? 1 : -1);
+    })[0] ?? null;
+}
 function rangeFor(pool, decA, decB, currentQuotePerTenmm, usdPrice) {
   const lowUsd = usdPrice + CENTS_ABOVE;
   const highUsd = 1;
@@ -135,7 +150,7 @@ function rangeFor(pool, decA, decB, currentQuotePerTenmm, usdPrice) {
 }
 async function main() {
   if (has("--execute") && has("--plan-only")) die("choose only one of --execute or --plan-only");
-  const reserveArg = arg("--gas-reserve-sui") ?? arg("--reserve-sui") ?? "4";
+  const reserveArg = arg("--gas-reserve-sui") ?? arg("--reserve-sui") ?? "0.75";
   const reserveSuiRaw = parseRaw(reserveArg, SUI_DECIMALS, "gas-reserve-sui");
   const client = new SuiGrpcClient({ network: "mainnet", baseUrl: "https://rpc-mainnet.suiscan.xyz:443" });
   const sdk = CetusClmmSDK.createSDK({ env: "mainnet" });
@@ -163,7 +178,7 @@ async function main() {
   const leftoverRaw = totalRaw - eachRaw * BigInt(pools.length);
   if (eachRaw <= 0n) die(`available TENMM is too small to split across ${pools.length} pools`);
   if (availableSuiRaw < reserveSuiRaw) die(`SUI guard stopped: ${display(availableSuiRaw, SUI_DECIMALS)} SUI is below reserve ${display(reserveSuiRaw, SUI_DECIMALS)} SUI`);
-  if (has("--execute") && availableSuiRaw < reserveSuiRaw + GAS_BUDGET_RAW * BigInt(pools.length)) die(`SUI guard stopped: ${display(availableSuiRaw, SUI_DECIMALS)} SUI cannot cover worst-case gas for ${pools.length} transactions and reserve`);
+  if (has("--execute") && availableSuiRaw < reserveSuiRaw + GAS_BUDGET_RAW) die(`SUI guard stopped: ${display(availableSuiRaw, SUI_DECIMALS)} SUI cannot cover the batched PTB gas budget and reserve`);
   const marketUrl = CONFIG.dexscreenerUrl;
   const marketResponse = await fetch(marketUrl.replace("https://dexscreener.com", "https://api.dexscreener.com/latest/dex/pairs/sui"), { headers: { accept: "application/json" } }).catch(() => null);
   // The configured URL is a page URL; use the known pair id from its final path.
@@ -179,6 +194,10 @@ async function main() {
   decimalsByType.set(normalizeType(TENMM_TYPE), TENMM_DECIMALS);
   decimalsByType.set(normalizeType(SUI_TYPE), SUI_DECIMALS);
   const plans = [];
+  let batchTx = has("--plan-only") ? null : new Transaction();
+  const sharedTenmmCoin = batchTx ? batchTx.add(coinWithBalance({ balance: totalRaw, type: TENMM_TYPE })) : null;
+  const tenmmParts = batchTx ? batchTx.splitCoins(sharedTenmmCoin, pools.map(() => batchTx.pure.u64(eachRaw))) : [];
+  if (batchTx) batchTx.transferObjects([sharedTenmmCoin], OPS_WALLET);
   for (const item of pools) {
     const pool = await sdk.Pool.getPool(item.poolId, true);
     const decA = decimalsByType.get(normalizeType(pool.coin_type_a));
@@ -190,35 +209,37 @@ async function main() {
     if (pool.is_pause || BigInt(pool.liquidity ?? 0) <= 0n) throw new Error(`pool ${item.entry.pair} is paused or empty`);
     const currentQuotePerTenmm = quotePerTenmmFromRaw(pool, decA, decB);
     const range = rangeFor(pool, decA, decB, currentQuotePerTenmm, usdPrice);
+    const existing = await findStillOorPosition(sdk, pool.id, range.currentTick);
+    const action = existing ? "add" : "open";
+    const tickLower = existing ? Number(existing.tick_lower_index) : range.lower;
+    const tickUpper = existing ? Number(existing.tick_upper_index) : range.upper;
     const amountA = tenmmIsA ? eachRaw : 0n;
     const amountB = tenmmIsB ? eachRaw : 0n;
-    const plan = { pair: item.entry.pair, dex: item.entry.dex, symbol: String(item.entry.pair).replace(/^10MM\//i, "").replace(/[^A-Za-z0-9]/g, ""), poolId: pool.id, coinTypeA: pool.coin_type_a, coinTypeB: pool.coin_type_b, decimalsA: decA, decimalsB: decB, tickSpacing: range.spacing, currentTick: range.currentTick, tickLower: range.lower, tickUpper: range.upper, currentQuotePerTenmm, targetLowQuotePerTenmm: range.lowQuote, targetHighQuotePerTenmm: range.highQuote, actualLowQuotePerTenmm: range.actualLowQuote, actualHighQuotePerTenmm: range.actualHighQuote, targetLowUsd: range.lowUsd, targetHighUsd: range.highUsd, amount10mm: display(eachRaw, TENMM_DECIMALS), amount10mmRaw: eachRaw.toString(), amountA: amountA.toString(), amountB: amountB.toString(), fixAmountA: tenmmIsA, positionMode: tenmmIsA ? "TENMM-only below-range; quoted price band above spot" : "TENMM-only above-range; quoted price band above spot", priceSource: `DexScreener ${marketUrl}` };
-    if (has("--plan-only")) { plans.push(plan); continue; }
-    const tx = await sdk.Position.createAddLiquidityFixTokenPayload({ amount_a: amountA.toString(), amount_b: amountB.toString(), slippage: 0, fix_amount_a: tenmmIsA, is_open: true, tick_lower: range.lower, tick_upper: range.upper, collect_fee: false, rewarder_coin_types: [], coin_type_a: pool.coin_type_a, coin_type_b: pool.coin_type_b, pool_id: pool.id, pos_id: "" });
-    tx.setSender(OPS_WALLET);
-    tx.setGasBudget(Number(GAS_BUDGET_RAW));
-    if (!has("--execute")) {
-      const bytes = await tx.build({ client });
-      plan.artifact = writeArtifact(bytes, plan);
-      plans.push(plan);
-      continue;
+    const plan = { pair: item.entry.pair, dex: item.entry.dex, symbol: String(item.entry.pair).replace(/^10MM\//i, "").replace(/[^A-Za-z0-9]/g, ""), poolId: pool.id, positionId: existing?.pos_object_id ?? null, action, coinTypeA: pool.coin_type_a, coinTypeB: pool.coin_type_b, decimalsA: decA, decimalsB: decB, tickSpacing: range.spacing, currentTick: range.currentTick, tickLower, tickUpper, currentQuotePerTenmm, targetLowQuotePerTenmm: range.lowQuote, targetHighQuotePerTenmm: range.highQuote, actualLowQuotePerTenmm: range.actualLowQuote, actualHighQuotePerTenmm: range.actualHighQuote, targetLowUsd: range.lowUsd, targetHighUsd: range.highUsd, amount10mm: display(eachRaw, TENMM_DECIMALS), amount10mmRaw: eachRaw.toString(), amountA: amountA.toString(), amountB: amountB.toString(), fixAmountA: tenmmIsA, positionMode: tenmmIsA ? "TENMM-only below-range; quoted price band above spot" : "TENMM-only above-range; quoted price band above spot", priceSource: `DexScreener ${marketUrl}` };
+    if (!has("--plan-only")) {
+      batchTx = await sdk.Position.createAddLiquidityFixTokenPayload({ amount_a: amountA.toString(), amount_b: amountB.toString(), slippage: 0, fix_amount_a: tenmmIsA, is_open: !existing, tick_lower: tickLower, tick_upper: tickUpper, collect_fee: false, rewarder_coin_types: [], coin_type_a: pool.coin_type_a, coin_type_b: pool.coin_type_b, pool_id: pool.id, pos_id: existing?.pos_object_id ?? "" }, batchTx, tenmmIsA ? tenmmParts[plans.length] : undefined, tenmmIsB ? tenmmParts[plans.length] : undefined);
     }
-    const bytes = await tx.build({ client });
-    const signer = signerForWallet();
-    if (!signer) die(`no local Ed25519 signer for ${OPS_WALLET}`);
-    const result = await client.signAndExecuteTransaction({ signer, transaction: bytes, include: { effects: true, events: true, balanceChanges: true, transaction: true } });
-    const executed = extractTx(result);
-    const status = executed.effects?.status;
-    plan.digest = executed.digest;
-    plan.status = status;
-    plan.created = executed.effects?.created ?? [];
-    plan.events = executed.events ?? [];
-    plan.balanceChanges = executed.balanceChanges ?? [];
     plans.push(plan);
-    if (status?.status && status.status !== "success") throw new Error(`transaction ${executed.digest ?? "unknown"} failed: ${JSON.stringify(status)}`);
+  }
+  let batch = {};
+  if (!has("--plan-only")) {
+    batchTx.setSender(OPS_WALLET);
+    batchTx.setGasBudget(Number(GAS_BUDGET_RAW));
+    const bytes = await batchTx.build({ client });
+    if (!has("--execute")) {
+      batch.artifact = writeArtifact(bytes, { symbol: "batch", batchedPools: pools.length, plans });
+    } else {
+      const signer = signerForWallet();
+      if (!signer) die(`no local Ed25519 signer for ${OPS_WALLET}`);
+      const result = await client.signAndExecuteTransaction({ signer, transaction: bytes, include: { effects: true, events: true, balanceChanges: true, transaction: true } });
+      const executed = extractTx(result);
+      const status = executed.effects?.status;
+      batch = { digest: executed.digest, status, created: executed.effects?.created ?? [], events: executed.events ?? [], balanceChanges: executed.balanceChanges ?? [] };
+      if (status?.status && status.status !== "success") throw new Error(`batched transaction ${executed.digest ?? "unknown"} failed: ${JSON.stringify(status)}`);
+    }
   }
   const mode = has("--execute") ? "executed" : (has("--plan-only") ? "plan-only" : "dry-run");
   console.log(JSON.stringify({ network: "mainnet", mode, wallet: OPS_WALLET, availableTenmm: display(availableTenmmRaw, TENMM_DECIMALS), availableSui: display(availableSuiRaw, SUI_DECIMALS), dexScreenerUsd10mm: usdPrice, usdOffset: CENTS_ABOVE, totalAllocated10mm: display(eachRaw * BigInt(pools.length), TENMM_DECIMALS), perPool10mm: display(eachRaw, TENMM_DECIMALS), leftover10mm: display(leftoverRaw, TENMM_DECIMALS), gasReserveSui: display(reserveSuiRaw, SUI_DECIMALS),
-    suiLiquidityInputRaw: "0", liveCetusPools: pools.length, skippedLivePools: skipped, plans }, null, 2));
+    suiLiquidityInputRaw: "0", liveCetusPools: pools.length, batchedPtbCount: has("--plan-only") ? 0 : 1, skippedLivePools: skipped, ...batch, plans }, null, 2));
 }
 main().catch((error) => { console.error(error?.stack ?? error); process.exit(1); });
