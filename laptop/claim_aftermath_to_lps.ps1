@@ -1,14 +1,22 @@
-# Claim pending Aftermath TENMM rewards, then add the claimed TENMM to the
-# existing Cetus positions. Defaults to dry-run; use -Execute to submit.
-param([switch]$Execute)
+# Safely claim (optionally) and add only a small, live-price-sized amount to
+# the existing Cetus positions. Defaults to dry-run; use -Execute to submit.
+param(
+  [switch]$Execute,
+  [switch]$SkipClaim,
+  [decimal]$MaxSui = 2,
+  [decimal]$PerPositionSui = 1,
+  [decimal]$ReserveSui = 4
+)
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = if ($env:REPO_DIR) { $env:REPO_DIR } else { Split-Path $here -Parent }
 $claimScript = Join-Path $RepoRoot "laptop\aftermath_claim_rewards.mjs"
 $cetusScript = Join-Path $RepoRoot "laptop\cetus_lp_add.mjs"
-if (-not (Test-Path $claimScript)) { throw "Claim script not found: $claimScript" }
+if (-not $SkipClaim -and -not (Test-Path $claimScript)) { throw "Claim script not found: $claimScript" }
 if (-not (Test-Path $cetusScript)) { throw "Cetus script not found: $cetusScript" }
+if ($MaxSui -le 0 -or $PerPositionSui -le 0 -or $ReserveSui -lt 2) { throw "Require positive budgets and reserve-sui >= 2 (4 preferred)." }
 
+function Invariant([decimal]$Value) { return $Value.ToString([System.Globalization.CultureInfo]::InvariantCulture) }
 function Invoke-NodeJson {
   param([string]$Script, [string[]]$Arguments)
   $oldErrorAction = $ErrorActionPreference
@@ -28,50 +36,37 @@ function Invoke-NodeJson {
   return [pscustomobject]@{ ExitCode = $code; Lines = $lines; Json = $json }
 }
 
-$claimArgs = @()
-if ($Execute) { $claimArgs += "--execute" }
-$claim = Invoke-NodeJson $claimScript $claimArgs
-if ($claim.ExitCode -ne 0) { throw "Aftermath claim failed with exit code $($claim.ExitCode)" }
-if (-not $claim.Json) { throw "Aftermath claim did not return JSON" }
-$claimedValue = $claim.Json.claimedRewardRaw
-if ($null -eq $claimedValue -or [string]::IsNullOrWhiteSpace([string]$claimedValue)) { $claimedValue = $claim.Json.pendingRewardRaw }
-if ($null -eq $claimedValue -or [string]::IsNullOrWhiteSpace([string]$claimedValue)) { $claimedValue = 0 }
-$claimedRaw = [bigint]$claimedValue
-if ($claimedRaw -le 0) {
-  Write-Host "No claimable TENMM; no Cetus transaction was built or submitted."
-  exit 0
+if (-not $SkipClaim) {
+  $claimArgs = @()
+  if ($Execute) { $claimArgs += "--execute" }
+  $claim = Invoke-NodeJson $claimScript $claimArgs
+  if ($claim.ExitCode -ne 0) { throw "Aftermath claim failed with exit code $($claim.ExitCode)" }
+  if (-not $claim.Json) { throw "Aftermath claim did not return JSON" }
+  Write-Host "Claim step completed; LP deployment remains capped and live-price-sized."
+} else {
+  Write-Host "SkipClaim set: no Aftermath claim will be built or submitted."
 }
 
-# Split 50/50, assigning the odd smallest unit to main. Main uses the existing
-# position and requests matching SUI; second is preferred as the no-SUI fallback when its range allows it.
-$mainRaw = ($claimedRaw + 1) / 2
-$secondRaw = $claimedRaw - $mainRaw
-function Format-10mm([bigint]$raw) {
-  $whole = $raw / [bigint]100000000
-  $frac = ($raw % [bigint]100000000).ToString().PadLeft(8, "0").TrimEnd("0")
-  if ($frac.Length -eq 0) { return "$whole" }
-  return "$whole.$frac"
+# Use at most MaxSui in this whole run, with a per-position hard ceiling.
+$remaining = $MaxSui
+$results = @()
+foreach ($mode in @("main", "second")) {
+  if ($remaining -le 0) { break }
+  $budget = [Math]::Min($PerPositionSui, $remaining)
+  $lpArgs = @(
+    "--mode", $mode,
+    "--sui-budget", (Invariant $budget),
+    "--reserve-sui", (Invariant $ReserveSui)
+  )
+  if ($Execute) { $lpArgs += "--execute" } else { $lpArgs += "--plan-only" }
+  $result = Invoke-NodeJson $cetusScript $lpArgs
+  $results += $result
+  if ($result.ExitCode -ne 0) { Write-Warning "$mode position LP add failed; no oversized fallback will be attempted." }
+  else {
+    $remaining -= $budget
+    if ($result.Json) { Write-Host ("{0} LP plan: {1} TENMM, SUI max {2}" -f $mode, $result.Json.amount10mm, $result.Json.suiAmountMax) }
+  }
 }
-$mainAmount = Format-10mm $mainRaw
-$secondAmount = Format-10mm $secondRaw
-$lpArgsMain = @("--mode", "main", "--amount10mm", $mainAmount)
-$lpArgsSecond = @("--mode", "second", "--amount10mm", $secondAmount)
-if ($Execute) { $lpArgsMain += "--execute"; $lpArgsSecond += "--execute" } else { $lpArgsMain += "--plan-only"; $lpArgsSecond += "--plan-only" }
-
-$displayValue = $claim.Json.claimedReward10mm
-if ($null -eq $displayValue -or [string]::IsNullOrWhiteSpace([string]$displayValue)) { $displayValue = $claim.Json.pendingReward10mm }
-Write-Host ("Claimed {0} TENMM; preferred Cetus split main={1}, second={2}" -f $displayValue, $mainAmount, $secondAmount)
-$main = Invoke-NodeJson $cetusScript $lpArgsMain
-if ($main.ExitCode -ne 0) {
-  Write-Warning "Main position dry-run/submit failed (usually insufficient matching SUI); routing the full claim to the existing second position."
-  $fallback = Format-10mm $claimedRaw
-  $fallbackArgs = @("--mode", "second", "--amount10mm", $fallback)
-  if ($Execute) { $fallbackArgs += "--execute" } else { $fallbackArgs += "--plan-only" }
-  $second = Invoke-NodeJson $cetusScript $fallbackArgs
-  if ($second.ExitCode -ne 0) { throw "Main and fallback second-position LP adds failed" }
-  if ($Execute) { Write-Host "Claim-to-LP complete via second-position fallback." } else { Write-Host "Dry-run complete via second-position fallback plan; no transaction submitted." }
-  exit 0
-}
-$second = Invoke-NodeJson $cetusScript $lpArgsSecond
-if ($second.ExitCode -ne 0) { throw "Second-position LP add failed" }
-if ($Execute) { Write-Host "Claim-to-LP complete: both existing Cetus positions updated." } else { Write-Host "Dry-run complete: claim PTB and both existing-position LP plans checked; no transaction submitted." }
+if (($results | Where-Object { $_.ExitCode -eq 0 }).Count -eq 0) { throw "No safe LP add completed" }
+if ($Execute) { Write-Host ("Safe claim-to-LP run complete; planned SUI cap was {0}, reserve was {1}." -f (Invariant $MaxSui), (Invariant $ReserveSui)) }
+else { Write-Host ("Dry-run complete; no transaction submitted. Planned SUI cap was {0}, reserve was {1}." -f (Invariant $MaxSui), (Invariant $ReserveSui)) }
