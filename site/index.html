@@ -430,6 +430,11 @@
     }
     .community-strip h3 { margin:0; color:#fff; font-size:1rem; }
     .community-strip p { margin:4px 0 0; color:#94a3b8; font-size:.82rem; }
+    .dapp-stage {
+      margin-top: 16px; padding: 16px; border-radius: 16px;
+      border: 1px solid #7c3a10; background: #0b1220;
+    }
+    .dapp-stage .trade-row { margin-top: 8px; }
     footer .footer-socials { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
 
     .stake-farm .farm-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
@@ -623,7 +628,7 @@
     <div class="farm-stats-grid">
       <article class="farm-stat-card aftermath-stat">
         <div class="farm-card-head"><div><div class="eyebrow">AFTERMATH</div><h3>Stake farm · live</h3></div><span class="farm-badge">MINE REWARDS</span></div>
-        <strong class="farm-stat-value" id="aftermath-tvl">Loading…</strong>
+        <strong class="farm-stat-value" id="aftermath-tvl">~1,670.94 10MM</strong>
         <div class="farm-stat-row"><span>Staked TVL</span><strong id="aftermath-tvl-sub">—</strong></div>
         <div class="farm-stat-row"><span>Reward rate</span><strong id="aftermath-reward-rate">Loading…</strong></div>
         <div class="farm-stat-row"><span>Paid / remaining</span><strong id="aftermath-rewards">Loading…</strong></div>
@@ -637,32 +642,63 @@
       </article>
       <article class="farm-stat-card cetus-stat">
         <div class="farm-card-head"><div><div class="eyebrow">CETUS</div><h3>10MM / SUI pool · live</h3></div><span class="farm-badge">TRADE + LP</span></div>
-        <strong class="farm-stat-value" id="cetus-stat-liquidity">Loading…</strong>
-        <div class="farm-stat-row"><span>TVL</span><strong id="cetus-stat-tvl">Loading…</strong></div>
-        <div class="farm-stat-row"><span>Price</span><strong id="cetus-stat-price">Loading…</strong></div>
+        <strong class="farm-stat-value" id="cetus-stat-liquidity">~1,998.66 10MM + ~11.15 SUI</strong>
+        <div class="farm-stat-row"><span>TVL</span><strong id="cetus-stat-tvl">$75.56</strong></div>
+        <div class="farm-stat-row"><span>Price</span><strong id="cetus-stat-price">0.0408 SUI / $0.033</strong></div>
         <div class="farm-stat-row"><span>24h volume</span><strong id="cetus-stat-volume">Loading…</strong></div>
         <div class="farm-stat-row"><span>24h change</span><strong id="cetus-stat-change">—</strong></div>
         <div class="farm-stat-row"><span>24h txns</span><strong id="cetus-stat-txns">—</strong></div>
         <div class="farm-progress" aria-hidden="true"><span id="cetus-progress-bar" style="width:55%"></span></div>
         <p class="farm-stat-note">DexScreener snapshot · 1% mine share tops main LP · 1% second LP</p>
         <div class="farm-card-actions">
-          <a href="#get-10mm">Buy on-site (Cetus)</a>
+          <a href="#dapp-trade">Buy on-site (Cetus)</a>
           <a class="secondary" href="https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be" target="_blank" rel="noopener noreferrer">Open Cetus LP</a>
           <a class="secondary" id="cetus-dex-link" href="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2" target="_blank" rel="noopener noreferrer">DexScreener</a>
         </div>
       </article>
     </div>
-    <div class="onpage-panels">
-      <div class="onpage-panel" id="onpage-buy">
-        <h3>Buy 10MM without leaving</h3>
-        <p>Use the embedded Cetus Terminal in <a href="#get-10mm">Get 10MM</a>. Swaps hit the live 10MM/SUI pool; check price impact on thin liquidity.</p>
-        <div class="farm-card-actions"><a href="#get-10mm">Jump to Cetus Terminal</a></div>
+    <div class="dapp-stage" id="dapp-trade">
+      <div class="eyebrow">ON-SITE DAPPS</div>
+      <h3 style="color:#fff;margin:0 0 10px">Buy on Cetus · chart + swap stay here</h3>
+      <p class="farm-stat-note" style="margin-top:0">Live DexScreener chart and Cetus Terminal. Connect Slush in the terminal to swap without leaving this page.</p>
+      <div class="trade-row" aria-label="Chart and Cetus trade">
+        <div class="dex-chart-wrap" aria-label="10MM DexScreener chart">
+          <div id="dexscreener-embed">
+            <iframe
+              title="10MM / SUI DexScreener chart"
+              src="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2?embed=1&amp;loadChartSettings=0&amp;trades=0&amp;info=0&amp;chartLeftToolbar=0&amp;chartDefaultOnMobile=1&amp;chartTheme=dark&amp;theme=dark&amp;chartStyle=0&amp;chartType=usd&amp;interval=15"
+              referrerpolicy="origin-when-cross-origin"
+              allow="clipboard-write"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </div>
+        <aside class="cetus-side-card" aria-label="Cetus swap">
+          <div class="cetus-terminal-shell" aria-label="Cetus swap terminal"><div id="cetus-terminal"></div></div>
+        </aside>
       </div>
-      <div class="onpage-panel" id="onpage-stake">
-        <h3>Stake for mine rewards</h3>
-        <p>1) Buy 10MM on Cetus. 2) Open the Aftermath farm with the button above. 3) Stake 10MM there. Rewards are topped up from ~98% of each mine’s ops share (~45.7 10MM / 10 min until the first halving).</p>
-        <p class="stake-embed-note">Aftermath does not offer a reliable in-page embed yet, so stake confirms in their farm UI. All live farm numbers stay on this page.</p>
-        <div class="farm-card-actions"><a id="aftermath-farm-link-2" href="https://aftermath.finance/farms/0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7" target="_blank" rel="noopener noreferrer">Open stake farm</a></div>
+      <div id="feePreview" class="fee-preview">Swaps use Cetus pool fees — review price impact before confirming.</div>
+      <div id="status" class="status">Cetus Terminal loading… Connect Slush to swap. Stake on Aftermath for mine rewards.</div>
+    </div>
+
+    <div class="dapp-stage" id="dapp-stake" style="margin-top:18px">
+      <div class="eyebrow">AFTERMATH STAKE</div>
+      <h3 style="color:#fff;margin:0 0 10px">Stake 10MM for mine-funded rewards</h3>
+      <p class="farm-stat-note" style="margin-top:0">Farm stats above update from chain. Confirm stake in Aftermath (embed blocked by most farm hosts). Use the button to open the farm with one click.</p>
+      <div class="farm-card-actions">
+        <a class="primary" id="aftermath-farm-link-2" href="https://aftermath.finance/farms/0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7" target="_blank" rel="noopener noreferrer">Open Aftermath farm &amp; stake</a>
+        <a class="secondary" href="#aftermath-tvl">See live farm stats</a>
+      </div>
+      <div class="aftermath-embed-shell" style="margin-top:12px;border:1px solid #334155;border-radius:14px;overflow:hidden;background:#0b1220;min-height:220px">
+        <iframe
+          id="aftermath-embed"
+          title="Aftermath farm"
+          src="https://aftermath.finance/farms/0x4312dd6776ffbc77801d0b85821f9d129eb6e0af0648ab7beea591f708f74ff7"
+          style="width:100%;height:520px;border:0;background:#0b1220"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+        ></iframe>
+        <p class="stake-embed-note" style="padding:10px 12px">If the farm frame is blank, your browser blocked the embed — use <strong>Open Aftermath farm &amp; stake</strong> above. Stats on the Aftermath card still update on this page.</p>
       </div>
     </div>
   </section>
@@ -723,27 +759,8 @@
       <p class="pool-note" id="pool-note">Provide 10MM/SUI liquidity on Cetus to earn swap fees. Pool liquidity is currently thin; check price impact before swapping.</p>
     </div>
 
-    <div class="trade-row" aria-label="Chart and Cetus trade">
-      <div class="dex-chart-wrap" aria-label="10MM DexScreener chart">
-        <div id="dexscreener-embed">
-          <iframe
-            title="10MM / SUI DexScreener chart"
-            src="https://dexscreener.com/sui/0xdee1982f5a75e5dace09b2f4dac1ed473cbbbd0ca34ad06a9876abffac7e2bb2?embed=1&amp;loadChartSettings=0&amp;trades=0&amp;info=0&amp;chartLeftToolbar=0&amp;chartDefaultOnMobile=1&amp;chartTheme=dark&amp;theme=dark&amp;chartStyle=0&amp;chartType=usd&amp;interval=15"
-            referrerpolicy="origin-when-cross-origin"
-            allow="clipboard-write"
-            allowfullscreen
-          ></iframe>
-        </div>
-      </div>
-      <aside class="cetus-side-card" aria-label="Cetus swap">
-        <div class="cetus-terminal-shell" aria-label="Cetus swap terminal"><div id="cetus-terminal"></div></div>
-      </aside>
-
-    </div>
-    <div id="feePreview" class="fee-preview">Swaps use Cetus pool fees — review price impact on Cetus before confirming.</div>
-    <p class="swap-disclaimer"><strong>Swap note:</strong> Cetus swaps use the 10MM/SUI pool and LP fees go to liquidity providers. Wallet or DEX holdings do not earn mine-funded rewards until staked on Aftermath.</p>
-    <div class="swap-fallbacks" aria-label="Cetus embedded terminal note"><span>Use the embedded Cetus swap card beside the chart.</span></div>
-    <div id="status" class="status">Cetus Terminal is loading. Connect Slush to view wallet balances. Stake on Aftermath for mine-funded rewards.</div>
+    <p class="swap-disclaimer"><strong>Buy / chart live above</strong> in <a href="#dapp-trade">Stake &amp; earn → On-site dapps</a>. Cetus Terminal and DexScreener are embedded there so you do not need to leave the page.</p>
+    <div class="farm-card-actions" style="margin:12px 0"><a href="#dapp-trade">Open on-site Cetus Terminal</a><a class="secondary" href="#dapp-stake">Open Aftermath stake</a></div>
     <div id="wallet-help" class="wallet-help" role="alert" hidden>
       <strong>Mobile wallet connection</strong>
       <p>This site only connects to Slush (not Binance). On phone: open this page inside the Slush app browser. On desktop: install or unlock the Slush extension, then tap Connect Slush.</p>
@@ -827,5 +844,5 @@
 </main>
 <link rel="stylesheet" href="https://archive.cetus.zone/assets/terminal/style-v2.css" />
 <script src="https://archive.cetus.zone/assets/terminal/main-v2.js"></script>
-<script type="module" src="app.js?v=socials1"></script>
-<script type="module" src="dashboard.js?v=socials1"></script>
+<script type="module" src="app.js?v=dapps1"></script>
+<script type="module" src="dashboard.js?v=dapps1"></script>

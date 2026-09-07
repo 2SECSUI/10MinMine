@@ -1,5 +1,4 @@
 import { CONFIG } from "./config.js";
-import { SuiClient, getFullnodeUrl } from "https://esm.sh/@mysten/sui@1.39.0/client";
 
 const siteUrl = (rel) => {
   const clean = String(rel || "").replace(/^\.\//, "");
@@ -9,7 +8,13 @@ const siteUrl = (rel) => {
 };
 // Note: public JSON-RPC may be deprecated; dashboard falls back to public/mine-*.json files.
 const $ = (id) => document.getElementById(id);
-const client = new SuiClient({ url: getFullnodeUrl(CONFIG.network) });
+let client = null;
+async function getClient() {
+  if (client) return client;
+  const mod = await import("https://esm.sh/@mysten/sui@1.39.0/client");
+  client = new mod.SuiClient({ url: mod.getFullnodeUrl(CONFIG.network) });
+  return client;
+}
 const fmt = (raw, decimals) => { try { const n = BigInt(raw || 0); const base = 10n ** BigInt(decimals); const whole = n / base; const frac = (n % base).toString().padStart(decimals, "0").replace(/0+$/, ""); return frac ? `${whole}.${frac}` : whole.toString(); } catch { return "—"; } };
 const isHexId = (v) => typeof v === "string" && /^0x[0-9a-fA-F]+$/.test(v);
 const coinType = () => CONFIG.coinType || (CONFIG.packageId ? `${CONFIG.packageId}::tenmm::TENMM` : "");
@@ -122,8 +127,8 @@ const feeEl = $("feePreview");
 if (feeEl) feeEl.textContent = "Swaps use Cetus pool fees — review price impact on Cetus before confirming.";
 async function loadDashboard(address) {
   $("dashboard").hidden = false; $("wallet-address").textContent = address;
-  try { const sui = await client.getBalance({ owner: address, coinType: "0x2::sui::SUI" }); $("wallet-sui").textContent = `${fmt(sui.totalBalance, 9)} SUI`; } catch { $("wallet-sui").textContent = "Pending…"; }
-  try { const ten = await client.getBalance({ owner: address, coinType: coinType() }); $("wallet-10mm").textContent = `${fmt(ten.totalBalance, 8)} 10MM`; } catch { $("wallet-10mm").textContent = "Pending…"; }
+  try { const sui = await (await getClient()).getBalance({ owner: address, coinType: "0x2::sui::SUI" }); $("wallet-sui").textContent = `${fmt(sui.totalBalance, 9)} SUI`; } catch { $("wallet-sui").textContent = "Pending…"; }
+  try { const ten = await (await getClient()).getBalance({ owner: address, coinType: coinType() }); $("wallet-10mm").textContent = `${fmt(ten.totalBalance, 8)} 10MM`; } catch { $("wallet-10mm").textContent = "Pending…"; }
   const override = CONFIG.stats?.pendingRewards; $("wallet-rewards").textContent = override || "See Aftermath farm";
   $("wallet-note").textContent = `Balances read from ${CONFIG.network} public RPC.`;
 }
@@ -431,7 +436,7 @@ async function refreshMine() {
   // Optional live RPC (may fail after JSON-RPC shutoff — ignore errors)
   if (isHexId(CONFIG.rewardPoolId)) {
     try {
-      const obj = await client.getObject({ id: CONFIG.rewardPoolId, options: { showContent: true } });
+      const obj = await (await getClient()).getObject({ id: CONFIG.rewardPoolId, options: { showContent: true } });
       const f = obj.data?.content?.fields || {};
       const liveSubsidy = field(f, ["current_subsidy", "subsidy"]);
       const liveHeight = field(f, ["block_height", "height"]);
