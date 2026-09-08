@@ -4318,5 +4318,22 @@
                          }
                      ],
         "note":  "Split across 2 registered holders by principal"
+    },
+    {
+        "ts":  "2026-09-08T07:48:00.186903+01:00",
+        "height":  229,
+        "blocks":  1,
+        "minted_raw":  "5000000000",
+        "amount_10mm":  "50",
+        "event":  "mainnet_mine",
+        "digest":  "7ABcqaBmAxKyw2uQhoQK1Rtyzif7eFDP8hnoiNa9SSrB",
+        "rewarded":  [
+                         {
+                             "address":  "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+                             "amount_10mm":  "46.66666667",
+                             "principal_10mm":  "140"
+                         }
+                     ],
+        "note":  "50 10MM per block"
     }
 ]
