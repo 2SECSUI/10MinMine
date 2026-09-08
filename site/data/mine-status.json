@@ -5,17 +5,17 @@
     "height":  297,
     "block_height":  297,
     "lastBlockHeight":  297,
-    "total_minted_10mm":  "16600",
+    "total_minted_10mm":  "16650",
     "current_subsidy_10mm":  "50",
     "block_reward_note":  "50 10MM / block (then halvings)",
     "holders":  "2 registered",
     "price_note":  "Trade on Cetus 10MM/SUI",
     "fee_pot_note":  "0.01 SUI tip / mine when funded",
     "hold_slot_note":  "Rewards each ~10m block - see countdown",
-    "lastMineDigest":  "Nj1r5dwgijpetREfuzaksU5PqEnf2MX47kEQKVajNUY",
+    "lastMineDigest":  "",
     "poolUrl":  "https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be",
-    "updatedAt":  "2026-09-08T18:11:37Z",
+    "updatedAt":  "2026-09-08T18:11:38Z",
     "launchAt":  "2026-09-06T16:44:56Z",
-    "last_block_ts":  1788891097,
-    "next_block_ts":  1788891697
+    "last_block_ts":  1788891098,
+    "next_block_ts":  1788891698
 }
