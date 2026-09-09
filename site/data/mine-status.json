@@ -2,10 +2,10 @@
     "network":  "mainnet",
     "packageId":  "0xa03d915a9337be2463a5a391c2f9d470ad245eaeb96b6eac9a881618e494df98",
     "rewardPoolId":  "0x32423737a8e607111bc5ecb2ac49d226cc948abe4d690b55c20d63b09ee6e619",
-    "height":  404,
-    "block_height":  404,
-    "lastBlockHeight":  404,
-    "total_minted_10mm":  "25150",
+    "height":  405,
+    "block_height":  405,
+    "lastBlockHeight":  405,
+    "total_minted_10mm":  "25250",
     "current_subsidy_10mm":  "50",
     "block_reward_note":  "50 10MM / block (then halvings)",
     "holders":  "2 registered",
@@ -14,8 +14,8 @@
     "hold_slot_note":  "Rewards each ~10m block - see countdown",
     "lastMineDigest":  "",
     "poolUrl":  "https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be",
-    "updatedAt":  "2026-09-09T12:03:22Z",
+    "updatedAt":  "2026-09-09T12:13:50Z",
     "launchAt":  "2026-09-06T16:44:56Z",
-    "last_block_ts":  1788955402,
-    "next_block_ts":  1788956002
+    "last_block_ts":  1788956030,
+    "next_block_ts":  1788956630
 }
