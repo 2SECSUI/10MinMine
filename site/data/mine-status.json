@@ -14,8 +14,8 @@
   "hold_slot_note": "Rewards each ~10m block - see countdown",
   "lastMineDigest": "FKXdd1YHdLn7ir3JDggVbQNNLtsRziybmaDg5NCwXQYe",
   "poolUrl": "https://app.cetus.zone/position-detail/0x64477aaf7c88421b161315957ec71484174840d075742c979e85dd5fb05d43be",
-  "updatedAt": "2026-09-10T22:35:57Z",
+  "updatedAt": "2026-09-10T22:37:18Z",
   "launchAt": "2026-09-06T16:44:56Z",
-  "last_block_ts": 1789079757,
-  "next_block_ts": 1789080357
+  "last_block_ts": 1789079838,
+  "next_block_ts": 1789080438
 }
