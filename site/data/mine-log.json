@@ -14553,5 +14553,89 @@
                          }
                      ],
         "note":  "Split across 15 registered holders by principal"
+    },
+    {
+        "ts":  "2026-09-11T08:42:16.587465+01:00",
+        "height":  666,
+        "blocks":  2,
+        "minted_raw":  "10000000000",
+        "amount_10mm":  "100",
+        "event":  "mainnet_mine",
+        "digest":  "25CR5W9sPAEF3HR8mwwM8XQ52rSQ3k9UAxv5z4KaUcUX",
+        "rewarded":  [
+                         {
+                             "address":  "0x088d7e736caf92eafae90d5a98c181d90dee21a01a5c62a134dd6c7f17f4b45e",
+                             "amount_10mm":  "0.66666666"
+                         },
+                         {
+                             "address":  "0x260932ce0d7caa3648d03052be09098ffae7046dfa501a9e44b7236d89c865e9",
+                             "amount_10mm":  "0.66666666"
+                         },
+                         {
+                             "address":  "0x33c7f404891fc430bdba9e21f6589b3f391de1e1694f368c2c97cd94a86826f0",
+                             "amount_10mm":  "1E-08"
+                         },
+                         {
+                             "address":  "0x42bac141702bd31265f1f6aec519a5205f6d29b1fdd5a6e6f2fc3e1460477ea9",
+                             "amount_10mm":  "1E-08"
+                         },
+                         {
+                             "address":  "0x56a054ddb1a4db15ba17bfe24d44e3a45de02eec916cc65762cb1fdeb98f87a0",
+                             "amount_10mm":  "0.66666667"
+                         },
+                         {
+                             "address":  "0x58189b677894e0fe7ad38e0e516408a3500da57d86fc0436373bc1d9c6334d0a",
+                             "amount_10mm":  "83.99999994"
+                         },
+                         {
+                             "address":  "0x6c0d08c59e029b5354c4f0e836e0de311f8117b57aecce41f364871ac123d257",
+                             "amount_10mm":  "1E-08"
+                         },
+                         {
+                             "address":  "0x70b36cd945bbf77ca84d6568a6499960fc5640edf39a4410342f6da5360082f0",
+                             "amount_10mm":  "0.66666666"
+                         },
+                         {
+                             "address":  "0x88026b1331bcea8a45a3fc6dd538dd18829daf2829d55ba24aca683579124492",
+                             "amount_10mm":  "6.66666666"
+                         },
+                         {
+                             "address":  "0x89a1c807393670de16b055f0316232a5627b94bf74dfaa7ac34d3124109acf19",
+                             "amount_10mm":  "0.66666666"
+                         },
+                         {
+                             "address":  "0x8af2133a24d1097119305ec4262319ebd54e0e6473976a13e94bfe8f3341716f",
+                             "amount_10mm":  "0.66666666"
+                         },
+                         {
+                             "address":  "0xc2570b3e3e582ed8c55a54b932c0d948dd9527e9561a9ed2ef9d8eb4ff44178e",
+                             "amount_10mm":  "0.66666666"
+                         },
+                         {
+                             "address":  "0xcb06cdf105ce4019e4269450ca5ac015342fc5e5a10c8ab526e480c890723506",
+                             "amount_10mm":  "0.66666667"
+                         },
+                         {
+                             "address":  "0xcccc8ab3f19f0430ae1a530b1abd21f096dcf65732394e5bad83378748158994",
+                             "amount_10mm":  "0.66666666"
+                         },
+                         {
+                             "address":  "0xd09783e7fe926e738c17522fed72866ef53b85d764bf10c0448854ba041a23ee",
+                             "amount_10mm":  "1.33333333"
+                         },
+                         {
+                             "address":  "0xda01705acf95f4c1e6c1ea2b1c8cdeba43cfb0372594a18ccb6f625ae9c0afde",
+                             "amount_10mm":  "0.66666666"
+                         },
+                         {
+                             "address":  "0xefe66cb8f823a99e09da9f59dc4e8c77a6c2a1f408876e903931fc6c393811dd",
+                             "amount_10mm":  "0.66666666"
+                         },
+                         {
+                             "address":  "0xf334499b26e44510ea332f0dcc83709ee609b312a5a7d19149f548ba4238ce46",
+                             "amount_10mm":  "0.66666666"
+                         }
+                     ],
+        "note":  "Split across 18 registered holders by principal"
     }
 ]
